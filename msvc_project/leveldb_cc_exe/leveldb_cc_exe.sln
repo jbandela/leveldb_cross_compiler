@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "leveldb_cc_exe", "leveldb_cc_exe\leveldb_cc_exe.vcxproj", "{9FD83FBA-6AF0-4B15-A4C2-54DC3FE12A95}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "leveldb_cc_dll", "..\leveldb_cc_dll\leveldb_cc_dll.vcxproj", "{66F72BB5-9F87-4581-A5F4-F495D8469CE2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9FD83FBA-6AF0-4B15-A4C2-54DC3FE12A95}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9FD83FBA-6AF0-4B15-A4C2-54DC3FE12A95}.Debug|Win32.Build.0 = Debug|Win32
+		{9FD83FBA-6AF0-4B15-A4C2-54DC3FE12A95}.Release|Win32.ActiveCfg = Release|Win32
+		{9FD83FBA-6AF0-4B15-A4C2-54DC3FE12A95}.Release|Win32.Build.0 = Release|Win32
+		{66F72BB5-9F87-4581-A5F4-F495D8469CE2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{66F72BB5-9F87-4581-A5F4-F495D8469CE2}.Debug|Win32.Build.0 = Debug|Win32
+		{66F72BB5-9F87-4581-A5F4-F495D8469CE2}.Release|Win32.ActiveCfg = Release|Win32
+		{66F72BB5-9F87-4581-A5F4-F495D8469CE2}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
