@@ -127,7 +127,7 @@ struct IReadOptions
 	cross_function<IReadOptions,5,void*()> get_native;
 
 	IReadOptions()
-		:get_verify_checksums(this),set_verify_checksums(false),
+		:get_verify_checksums(this),set_verify_checksums(this),
 		get_fill_cache(this),set_fill_cache(this),
 		set_snapshot(this),get_native(this)
 

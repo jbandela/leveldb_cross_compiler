@@ -16,13 +16,22 @@ int main(){
 	auto wo = creator.CreateWriteOptions();
 	wo.set_sync(false);
 
-	db.Put(wo,"Name","John");
+	db.Put(wo,"Name3","John3");
+	db.Put(wo,"Name4","Paul4");
 
 	auto ro = creator.CreateReadOptions();
 	std::string name;
 	db.Get(ro,"Name",&name);
 
-	std::cout << name;
+	std::cout << name << "\n";
+
+	auto iter = db.NewIterator(ro);
+	iter.SeekToFirst();
+	while(iter.Valid()){
+		std::cout << iter.key().ToString() << "=" << iter.value().ToString() << "\n";
+		iter.Next();
+
+	};
 
 
 

@@ -199,6 +199,8 @@ struct ReadOptionsImplementation
 			options_.verify_checksums = b;
 		};
 
+		imp->get_native = [this](){return &options_;};
+
 	};
 
 
