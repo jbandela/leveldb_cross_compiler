@@ -191,7 +191,7 @@ struct IWriteBatch
 	>
 {
 
-		cross_function<IWriteBatch,0,void*()> get_native();
+		cross_function<IWriteBatch,0,void*()> get_native;
 		cross_function<IWriteBatch,1,void(Slice,Slice)> Put;
 		cross_function<IWriteBatch,2,void(Slice)> Delete;
 		cross_function<IWriteBatch,3,void()> Clear;
@@ -199,7 +199,7 @@ struct IWriteBatch
 
 
 	IWriteBatch()
-		:get_native(this),Put(this),Delete(this),Clear(this)
+		:get_native(this),Put(this),Delete(this),Clear(this),Iterate(this)
 	{}
 };
 
@@ -220,13 +220,14 @@ struct IIterator
 	cross_function<IIterator,5,void()> Prev;
 	cross_function<IIterator,6,Slice()> key;
 	cross_function<IIterator,7,Slice()> value;
-	cross_function<IIterator,7,Status()> status;
+	cross_function<IIterator,8,Status()> status;
 
 	// No support for cleanup function
 
 
 	IIterator()
-
+		:Valid(this),SeekToFirst(this),SeekToLast(this),Seek(this),
+		Next(this),Prev(this),key(this),value(this),status(this)
 	{}
 };
 
@@ -268,7 +269,7 @@ struct IDB
 	}
 
 	// Note change in function signature
-	cross_function<IDB,8,std::vector<std::uint64_t>(std::vector<Range>)> GetApproximateSizes();
+	cross_function<IDB,8,std::vector<std::uint64_t>(std::vector<Range>)> GetApproximateSizes;
 
 
 
@@ -280,7 +281,7 @@ struct IDB
 
 
 template<class T>
-struct ILevelDBCreator
+struct ILevelDBStaticFunctions
 	:public cross_compiler_interface::define_interface_unknown<T,
 	// {989DCE03-99AE-4DB2-9D74-A6FAEFEC3628}
 	cross_compiler_interface::uuid<
@@ -288,24 +289,24 @@ struct ILevelDBCreator
 	>
 	>
 {
-	cross_function<ILevelDBCreator,0,std::pair<Status,use_unknown<IDB>>
+	cross_function<ILevelDBStaticFunctions,0,std::pair<Status,use_unknown<IDB>>
 		(use_unknown<IOptions>,std::string name)> RawOpen;
 	Status Open(use_unknown<IOptions> options,std::string name,
 		use_unknown<IDB>* dbptr){
 			std::pair<Status,use_unknown<IDB>> ret = RawOpen(options,name);
-			if(ret.first.ok){
+			if(ret.first.ok()){
 				*dbptr = ret.second;
 			}
 			return ret.first;
 	}	
 
-	cross_function<ILevelDBCreator,1,use_unknown<IOptions>()> CreateOptions;
-	cross_function<ILevelDBCreator,2,use_unknown<IReadOptions>()> CreateReadOptions;
-	cross_function<ILevelDBCreator,3,use_unknown<IReadOptions>()> CreateWriteOptions;
+	cross_function<ILevelDBStaticFunctions,1,use_unknown<IOptions>()> CreateOptions;
+	cross_function<ILevelDBStaticFunctions,2,use_unknown<IReadOptions>()> CreateReadOptions;
+	cross_function<ILevelDBStaticFunctions,3,use_unknown<IWriteOptions>()> CreateWriteOptions;
 
 
 
-	ILevelDBCreator()
+	ILevelDBStaticFunctions()
 		:RawOpen(this),CreateOptions(this),CreateReadOptions(this),
 		CreateWriteOptions(this)
 	{}

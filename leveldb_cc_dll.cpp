@@ -1,17 +1,40 @@
 
 #include "leveldbwin\leveldb_src\include\leveldb\db.h"
 #include "leveldbwin\leveldb_src\include\leveldb\comparator.h"
+#include "leveldbwin\leveldb_src\include\leveldb\write_batch.h"
 
 #include "level_db_interfaces.h"
+
+#include<memory>
+
+
+#if defined _DEBUG
+
+#if defined LEVELDB_DLL
+#pragma comment(lib,"..\\_exports\\DebugDll\\leveldb_d.lib")
+#else
+
+#pragma comment(lib,"C:\\Users\\jrb\\Source\\Repos\\leveldb_cross_compiler\\leveldbwin\\build\\msvc10\\_exports\\Debug\\leveldb_d.lib")
+#endif
+
+#else
+
+#if defined LEVELDB_DLL
+#pragma comment(lib,"..\\_exports\\ReleaseDll\\leveldb.lib")
+#else
+#pragma comment(lib,"..leveldbwin\\build\\msvc10\\_exports\\Release\\leveldb.lib")
+#endif
+
+#endif
 
 struct SnapShotImplementation:public implement_unknown_interfaces<SnapShotImplementation,
 	ISnapshot>
 {
-	leveldb::Snapshot* snapshot_;
+	const leveldb::Snapshot* snapshot_;
 
-	SnapShotImplementation(leveldb::Snapshot* s):snapshot_(s){
+	SnapShotImplementation(const leveldb::Snapshot* s):snapshot_(s){
 		get_implementation<ISnapshot>()->get_native = [this]()->void*{
-			return snapshot_;
+			return const_cast<leveldb::Snapshot*>(snapshot_);
 		};
 
 		get_implementation<ISnapshot>()->get_ptr_to_snapshot_ptr = [this]()->void*{
@@ -228,3 +251,262 @@ struct WriteOptionsImplementation
 
 
 };
+
+struct HandlerFromIHandler:public leveldb::WriteBatch::Handler{
+	use_unknown<IHandler> handler_;
+
+	virtual void Put(const leveldb::Slice& key, const leveldb::Slice& value)override{
+		Slice skey(key.data(),key.size());
+		Slice svalue(value.data(),value.size());
+		handler_.Put(skey,svalue);
+
+	}
+	virtual void Delete(const leveldb::Slice& key)override{
+		Slice skey(key.data(),key.size());
+		handler_.Delete(skey);
+
+	}
+
+	HandlerFromIHandler(use_unknown<IHandler> h)
+		:handler_(h){}
+
+
+};
+
+
+Status StatusFromLevelDBStatus(leveldb::Status& s){
+	// On Purpose we made our Status the same as leveldb::Status
+	// So we cast
+	return *reinterpret_cast<Status*>(&s);
+
+}
+
+struct WriteBatchImplementation
+	:public implement_unknown_interfaces<WriteBatchImplementation,
+	IWriteBatch>
+{
+	leveldb::WriteBatch wb_;
+
+	WriteBatchImplementation(){
+		auto imp =  get_implementation<IWriteBatch>();
+
+		imp->get_native = [this]()->void*{ return &wb_;};
+
+		imp->Put = [this](Slice key,Slice value){
+			wb_.Put(leveldb::Slice(key.data(),key.size()),
+				leveldb::Slice(value.data(),value.size()));
+
+		};
+
+		imp->Delete = [this](Slice key){
+			wb_.Delete(leveldb::Slice(key.data(),key.size()));
+
+		};
+
+		imp->Clear = [this](){
+			wb_.Clear();
+
+		};
+		imp->Iterate = [this](use_unknown<IHandler> h)->Status{
+			leveldb::Status s = wb_.Iterate(new HandlerFromIHandler(h));
+			return StatusFromLevelDBStatus(s);
+
+		};
+	}
+
+
+
+};
+
+struct IteratorImplementation
+	:public implement_unknown_interfaces<IteratorImplementation,IIterator>{
+		std::unique_ptr<leveldb::Iterator> iter_;
+		IteratorImplementation(leveldb::Iterator* iter):iter_(iter){
+			auto imp = get_implementation<IIterator>();
+			
+			imp->Valid = [this]()->bool{return iter_->Valid();};
+
+			imp->SeekToFirst = [this](){iter_->SeekToFirst();};
+
+			imp->SeekToLast = [this](){iter_->SeekToLast();};
+
+			imp->Seek = [this](Slice key){ iter_->Seek(leveldb::Slice(
+				key.data(),key.size()));
+			};
+
+			imp->Next = [this](){ iter_->Next();};
+
+			imp->Prev = [this](){ iter_->Prev();};
+
+			imp->key = [this]()->Slice{
+				auto s = iter_->key();
+				return Slice(s.data(),s.size());
+			};
+
+			imp->value = [this]()->Slice{
+				auto s = iter_->value();
+				return Slice(s.data(),s.size());
+			};
+			
+			imp->status = [this]()->Status{
+				auto s = iter_->status();
+				return StatusFromLevelDBStatus(s);
+			};
+
+		};
+
+
+};
+
+
+struct DBImplementation:public implement_unknown_interfaces<DBImplementation,
+	IDB>
+{
+	std::unique_ptr<leveldb::DB> db_;
+
+	DBImplementation(leveldb::DB* db):db_(db){
+	
+		auto imp = get_implementation<IDB>();
+
+		imp->Put = [this](use_unknown<IWriteOptions> wo,Slice key,Slice value)
+		->Status{
+			auto s = db_->Put(*static_cast<leveldb::WriteOptions*>(wo.get_native()),
+				leveldb::Slice(key.data(),key.size()),
+				leveldb::Slice(value.data(),value.size()));
+			return StatusFromLevelDBStatus(s);
+
+		};
+
+		imp->Delete = [this](use_unknown<IWriteOptions> wo,Slice key)
+		->Status{
+			auto s = db_->Delete(*static_cast<leveldb::WriteOptions*>(wo.get_native()),
+				leveldb::Slice(key.data(),key.size()));
+			return StatusFromLevelDBStatus(s);
+
+		};
+
+		imp->Write = [this](use_unknown<IWriteOptions> wo,
+			use_unknown<IWriteBatch> wb)
+		->Status{
+			auto s = db_->Write(*static_cast<leveldb::WriteOptions*>(wo.get_native()),
+				static_cast<leveldb::WriteBatch*>(wb.get_native()));
+			return StatusFromLevelDBStatus(s);
+
+		};
+	
+	
+		imp->RawGet = [this](use_unknown<IReadOptions> ro,
+			Slice key)
+		->std::pair<Status,std::string>{
+			std::string value;
+
+			auto s = db_->Get(*static_cast<leveldb::ReadOptions*>(ro.get_native()),
+				leveldb::Slice(key.data(),key.size()),
+				&value);
+			return std::make_pair(StatusFromLevelDBStatus(s),value);
+
+		};
+	
+		imp->NewIterator = [this](use_unknown<IReadOptions> ro)->use_unknown<IIterator>{
+			return IteratorImplementation::create(db_->NewIterator(
+				*static_cast<leveldb::ReadOptions*>(ro.get_native())))
+				.QueryInterface<IIterator>();
+
+		};
+
+		imp->GetSnapshot = [this]()->use_unknown<ISnapshot>{
+			return SnapShotImplementation::create(db_->GetSnapshot())
+				.QueryInterface<ISnapshot>();
+
+		};
+
+		imp->ReleaseSnapshot = [this](use_unknown<ISnapshot> s){
+			db_->ReleaseSnapshot(static_cast<leveldb::Snapshot*>(s.get_native()));
+
+		};
+
+		imp->RawGetProperty = [this](Slice prop){
+			std::pair<bool,std::string> ret;
+			ret.first = db_->GetProperty(leveldb::Slice(prop.data(),prop.size()),
+				&ret.second);
+			return ret;
+		};
+
+		imp->GetApproximateSizes = [this](std::vector<Range> v){
+			std::vector<std::uint64_t> ret(v.size());
+			std::vector<leveldb::Range> ranges;
+			for(auto& r:v){
+				ranges.push_back(leveldb::Range(
+					
+					leveldb::Slice(r.first.data(),r.first.size()),
+					leveldb::Slice(r.second.data(),r.second.size())));
+
+			}
+
+			db_->GetApproximateSizes(&ranges[0],ranges.size(),&ret[0]);
+			return ret;
+
+
+		};
+	
+	}
+
+
+
+	
+
+
+
+};
+
+
+
+struct LevelDBStaticFunctions
+	:public implement_unknown_interfaces<LevelDBStaticFunctions
+	,ILevelDBStaticFunctions>
+{
+
+	LevelDBStaticFunctions(){
+		auto imp = get_implementation<ILevelDBStaticFunctions>();
+
+	imp->RawOpen = [](use_unknown<IOptions> options,std::string name){
+		leveldb::DB* db = 0;
+		auto s = leveldb::DB::Open(*static_cast<leveldb::Options*>(options.get_native()),
+			name,&db);
+		return std::make_pair(StatusFromLevelDBStatus(s),DBImplementation::create(db).QueryInterface<IDB>());
+
+	};
+
+	imp->CreateOptions = [](){
+		return OptionsImplementation::create().QueryInterface<IOptions>();
+	};
+
+	imp->CreateReadOptions = [](){
+		return ReadOptionsImplementation::create().QueryInterface<IReadOptions>();
+	};
+
+	imp->CreateWriteOptions = [](){
+		return WriteOptionsImplementation::create().QueryInterface<IWriteOptions>();
+	};
+
+
+
+	}
+
+
+};
+
+
+extern "C"{
+
+ cross_compiler_interface::portable_base* CROSS_CALL_CALLING_CONVENTION CreateLevelDBStaticFunctions(){
+	auto ret_int = LevelDBStaticFunctions::create();
+
+	auto ret = ret_int.get_portable_base();
+
+	ret_int.reset_portable_base();
+
+
+	return ret;
+}
+}
