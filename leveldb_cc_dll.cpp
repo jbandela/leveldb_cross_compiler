@@ -490,7 +490,15 @@ struct LevelDBStaticFunctions
 	imp->CreateWriteOptions = [](){
 		return WriteOptionsImplementation::create().QueryInterface<IWriteOptions>();
 	};
+	imp->DestroyDB = [](std::string name, use_unknown<IOptions> options){
+		auto s = leveldb::DestroyDB(name,*static_cast<leveldb::Options*>(options.get_native()));
+		return StatusFromLevelDBStatus(s);
+	};
 
+	imp->RepairDB = [](std::string name, use_unknown<IOptions> options){
+		auto s = leveldb::RepairDB(name,*static_cast<leveldb::Options*>(options.get_native()));
+		return StatusFromLevelDBStatus(s);
+	};
 
 
 	}

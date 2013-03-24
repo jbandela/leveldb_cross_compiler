@@ -176,7 +176,10 @@ inline std::string Status::ToString() const {
 	};
 #pragma pack(pop)
 	void modify_status(Status& s, const status_cross_type& sc){
-		s.state_ = sc.state;
+		s.state_ = nullptr;
+		if(sc.state){
+			s.state_ = Status::CopyState(sc.state);
+		}
 
 	}
 	inline void CROSS_CALL_CALLING_CONVENTION delete_state(const char* s){

@@ -306,12 +306,16 @@ struct ILevelDBStaticFunctions
 	cross_function<ILevelDBStaticFunctions,1,use_unknown<IOptions>()> CreateOptions;
 	cross_function<ILevelDBStaticFunctions,2,use_unknown<IReadOptions>()> CreateReadOptions;
 	cross_function<ILevelDBStaticFunctions,3,use_unknown<IWriteOptions>()> CreateWriteOptions;
+	cross_function<ILevelDBStaticFunctions,4,Status(std::string name,use_unknown<IOptions>)>
+		DestroyDB;
+	cross_function<ILevelDBStaticFunctions,5,Status(std::string name,use_unknown<IOptions>)>
+		RepairDB;
 
 
 
 	ILevelDBStaticFunctions()
 		:RawOpen(this),CreateOptions(this),CreateReadOptions(this),
-		CreateWriteOptions(this)
+		CreateWriteOptions(this),DestroyDB(this),RepairDB(this)
 	{}
 };
 

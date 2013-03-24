@@ -27,6 +27,8 @@ int main(){
 
 	db.Put(wo,"Name3","John3");
 	db.Put(wo,"Name4","Paul4");
+	db.Put(wo,"Name5","Paul5");
+	db.Put(wo,"Name6","Paul6");
 
 	auto ro = creator.CreateReadOptions();
 	std::string name;
@@ -42,7 +44,7 @@ int main(){
 
 	};
 
-
+	creator.DestroyDB("c:/tmp/testdb",options);
 
 
 }
