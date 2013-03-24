@@ -15,36 +15,50 @@ int main(){
 	auto creator = cross_compiler_interface::create_unknown(m,"CreateLevelDBStaticFunctions")
 		.QueryInterface<leveldb_cc::ILevelDBStaticFunctions>();
 
-	use_unknown<leveldb_cc::IDB> db;
-	auto options = creator.CreateOptions();
-	options.set_create_if_missing(true);
-	options.set_write_buffer_size(8*1024*1024);
+	// Open a scope so db goes out of scope so we can delete the database
+	{
+		use_unknown<leveldb_cc::IDB> db;
+		auto options = creator.CreateOptions();
+		options.set_create_if_missing(true);
+		options.set_write_buffer_size(8*1024*1024);
 
-	auto status = creator.Open(options,"c:/tmp/testdb",&db);
-	
-	auto wo = creator.CreateWriteOptions();
-	wo.set_sync(false);
+		auto status = creator.Open(options,"c:/tmp/testdb",&db);
 
-	db.Put(wo,"Name3","John3");
-	db.Put(wo,"Name4","Paul4");
-	db.Put(wo,"Name5","Paul5");
-	db.Put(wo,"Name6","Paul6");
+		auto wo = creator.CreateWriteOptions();
+		wo.set_sync(false);
+		auto wb = creator.CreateWriteBatch();
+		wb.Put("Name3","John3");
+		wb.Put("Name4","Paul4");
+		wb.Put("Name5","Paul5");
+		wb.Put("Name6","Paul6");
 
-	auto ro = creator.CreateReadOptions();
-	std::string name;
-	db.Get(ro,"Name",&name);
+		db.Write(wo,wb);
 
-	std::cout << name << "\n";
 
-	auto iter = db.NewIterator(ro);
-	iter.SeekToFirst();
-	while(iter.Valid()){
-		std::cout << iter.key().ToString() << "=" << iter.value().ToString() << "\n";
-		iter.Next();
 
-	};
 
-	creator.DestroyDB("c:/tmp/testdb",options);
+		auto ro = creator.CreateReadOptions();
+		std::string name;
+		db.Get(ro,"Name",&name);
 
+		std::cout << name << "\n";
+
+		auto iter = db.NewIterator(ro);
+		for(iter.SeekToFirst();iter.Valid();iter.Next()){
+			std::cout << iter.key().ToString() << "=" << iter.value().ToString() << "\n";
+
+		};
+
+		std::cout << "\n\n";
+
+		db.Delete(wo,"Name3");
+		auto iter2 = db.NewIterator(ro);
+		for(iter2.SeekToFirst();iter2.Valid();iter2.Next()){
+			std::cout << iter2.key().ToString() << "=" << iter2.value().ToString() << "\n";
+
+		};
+	}
+	auto s = creator.DestroyDB("c:/tmp/testdb",creator.CreateOptions());
+	std::cout << s.ToString() << "\n\n";
 
 }
