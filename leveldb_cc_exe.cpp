@@ -3,6 +3,7 @@
 
 using cross_compiler_interface::use_unknown;
 
+
 // Need this for MSVC bug  http://connect.microsoft.com/VisualStudio/feedback/details/772001/codename-milan-c-11-compilation-issue#details
 using namespace leveldb_cc;
 
