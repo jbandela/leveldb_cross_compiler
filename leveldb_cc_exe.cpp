@@ -2,11 +2,19 @@
 #include "level_db_interfaces.h"
 
 using cross_compiler_interface::use_unknown;
-int main(){
-	auto creator = cross_compiler_interface::create_unknown("leveldb_cc_dll","CreateLevelDBStaticFunctions")
-		.QueryInterface<ILevelDBStaticFunctions>();
 
-	use_unknown<IDB> db;
+// Need this for MSVC bug  http://connect.microsoft.com/VisualStudio/feedback/details/772001/codename-milan-c-11-compilation-issue#details
+using namespace leveldb_cc;
+
+int main(){
+
+
+	cross_compiler_interface::module m("leveldb_cc_dll");
+
+	auto creator = cross_compiler_interface::create_unknown(m,"CreateLevelDBStaticFunctions")
+		.QueryInterface<leveldb_cc::ILevelDBStaticFunctions>();
+
+	use_unknown<leveldb_cc::IDB> db;
 	auto options = creator.CreateOptions();
 	options.set_create_if_missing(true);
 	options.set_write_buffer_size(8*1024*1024);

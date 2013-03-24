@@ -26,7 +26,7 @@
 #endif
 
 #endif
-
+using namespace leveldb_cc;
 struct SnapShotImplementation:public implement_unknown_interfaces<SnapShotImplementation,
 	ISnapshot>
 {

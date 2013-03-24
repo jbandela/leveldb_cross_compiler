@@ -22,7 +22,7 @@
 #include <string.h>
 #include <string>
 
-
+namespace leveldb_cc{
 class Slice {
  public:
   // Create an empty slice.
@@ -104,10 +104,15 @@ inline int Slice::compare(const Slice& b) const {
   return r;
 }
 
+
+
+typedef std::pair<Slice,Slice> Range;
+
+}
 namespace cross_compiler_interface{
     template<>
-    struct cross_conversion<Slice>{
-        typedef Slice original_type;
+    struct cross_conversion<leveldb_cc::Slice>{
+        typedef leveldb_cc::Slice original_type;
         typedef cross_string converted_type;
         static converted_type to_converted_type(const original_type& s){
             cross_string ret;
@@ -115,13 +120,12 @@ namespace cross_compiler_interface{
             ret.end = ret.begin + s.size();
             return ret;
         }
-        static  Slice to_original_type(converted_type& c){
-            Slice ret(c.begin,c.end - c.begin);
+        static  leveldb_cc::Slice to_original_type(converted_type& c){
+            leveldb_cc::Slice ret(c.begin,c.end - c.begin);
             return ret;
         }
     };
 
 }
 
-typedef std::pair<Slice,Slice> Range;
 #endif  // JRB_MODIFIED_STORAGE_LEVELDB_INCLUDE_SLICE_H_

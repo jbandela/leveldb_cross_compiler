@@ -5,6 +5,9 @@
 using cross_compiler_interface::cross_function;
 using cross_compiler_interface::use_unknown;
 using cross_compiler_interface::implement_unknown_interfaces;
+
+namespace leveldb_cc{
+
 enum CompressionType {
   // NOTE: do not change the values of existing entries, as these are
   // part of the persistent format on disk.
@@ -311,3 +314,5 @@ struct ILevelDBStaticFunctions
 		CreateWriteOptions(this)
 	{}
 };
+
+}

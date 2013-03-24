@@ -19,9 +19,10 @@
 #include "slice.h"
 #include <cstdint>
 
+namespace leveldb_cc{
+// Simple status that just has code
 struct status_cross_type;
 
-// Simple status that just has code
 class  Status {
 
 	friend void modify_status(Status& s, const status_cross_type&);
@@ -166,6 +167,7 @@ inline std::string Status::ToString() const {
 	return result;
   }
 }
+
 #pragma pack(push,1)
 	struct status_cross_type{
 		const char* state;
@@ -191,25 +193,25 @@ inline std::string Status::ToString() const {
 
 
 
-
+}
 
 
 
 namespace cross_compiler_interface{
 	template<>
-	struct cross_conversion<Status>{
+	struct cross_conversion<leveldb_cc::Status>{
 
 
-		typedef Status original_type;
-		typedef status_cross_type converted_type;
+		typedef leveldb_cc::Status original_type;
+		typedef leveldb_cc::status_cross_type converted_type;
 		static converted_type to_converted_type(const original_type& s){
-			status_cross_type ret;
-			status_to_cross(s,ret);
+			leveldb_cc::status_cross_type ret;
+			leveldb_cc::status_to_cross(s,ret);
 			return ret;
 		}
-		static  original_type to_original_type(status_cross_type& sc){
-			Status ret;
-			modify_status(ret,sc);
+		static  original_type to_original_type(leveldb_cc::status_cross_type& sc){
+			leveldb_cc::Status ret;
+			leveldb_cc::modify_status(ret,sc);
 			if(sc.state){
 				sc.deleter(sc.state);
 			}
