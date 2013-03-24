@@ -10,22 +10,14 @@
 
 #if defined _DEBUG
 
-#if defined LEVELDB_DLL
-#pragma comment(lib,"..\\_exports\\DebugDll\\leveldb_d.lib")
-#else
-
-#pragma comment(lib,"C:\\Users\\jrb\\Source\\Repos\\leveldb_cross_compiler\\leveldbwin\\build\\msvc10\\_exports\\Debug\\leveldb_d.lib")
-#endif
+#pragma comment(lib,"..\\..\\leveldbwin\\build\\msvc10\\_exports\\Debug\\leveldb_d.lib")
 
 #else
 
-#if defined LEVELDB_DLL
-#pragma comment(lib,"..\\_exports\\ReleaseDll\\leveldb.lib")
-#else
-#pragma comment(lib,"..leveldbwin\\build\\msvc10\\_exports\\Release\\leveldb.lib")
-#endif
+#pragma comment(lib,"..\\..\\leveldbwin\\build\\msvc10\\_exports\\Release\\leveldb.lib")
 
 #endif
+
 using namespace leveldb_cc;
 struct SnapShotImplementation:public implement_unknown_interfaces<SnapShotImplementation,
 	ISnapshot>
