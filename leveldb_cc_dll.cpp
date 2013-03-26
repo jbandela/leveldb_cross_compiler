@@ -1,7 +1,7 @@
 
-#include "leveldbwin\leveldb_src\include\leveldb\db.h"
-#include "leveldbwin\leveldb_src\include\leveldb\comparator.h"
-#include "leveldbwin\leveldb_src\include\leveldb\write_batch.h"
+#include "leveldb\db.h"
+#include "leveldb\comparator.h"
+#include "leveldb\write_batch.h"
 
 #include "level_db_interfaces.h"
 
