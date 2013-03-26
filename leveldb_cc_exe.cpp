@@ -22,7 +22,7 @@ int main(){
 		options.set_create_if_missing(true);
 		options.set_write_buffer_size(8*1024*1024);
 
-		auto status = creator.Open(options,"c:/tmp/testdb",&db);
+		db = creator.OpenDB(options,"c:/tmp/testdb");
 
 		auto wo = creator.CreateWriteOptions();
 		wo.set_sync(false);
@@ -32,16 +32,24 @@ int main(){
 		wb.Put("Name5","Paul5");
 		wb.Put("Name6","Paul6");
 
-		db.Write(wo,wb);
+		db.WriteBatch(wo,wb);
 
 
 
+			auto ro = creator.CreateReadOptions();
+		try{
+			std::string name = db.GetValue(ro,"Name");
+			std::cout << name << "\n";
+		}
+		catch(std::exception& e){
+			bad_status* ps = nullptr;
+			if((ps = dynamic_cast<bad_status*>(&e)) && ps->status().IsNotFound()){
+				std::cout << "Not Found ";
+			}
+			std::cout << "Error: " << e.what() << std::endl;
 
-		auto ro = creator.CreateReadOptions();
-		std::string name;
-		db.Get(ro,"Name",&name);
+		}
 
-		std::cout << name << "\n";
 
 		auto iter = db.NewIterator(ro);
 		for(iter.SeekToFirst();iter.Valid();iter.Next()){
@@ -51,7 +59,7 @@ int main(){
 
 		std::cout << "\n\n";
 
-		db.Delete(wo,"Name3");
+		db.DeleteValue(wo,"Name3");
 		auto iter2 = db.NewIterator(ro);
 		for(iter2.SeekToFirst();iter2.Valid();iter2.Next()){
 			std::cout << iter2.key().ToString() << "=" << iter2.value().ToString() << "\n";

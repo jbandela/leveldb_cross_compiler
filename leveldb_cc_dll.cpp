@@ -215,27 +215,6 @@ struct WriteOptionsImplementation
 			options_.sync = b;
 		};
 
-		imp->get_post_write_snapshot = [this]()->use_unknown<ISnapshot>{
-			if(options_.post_write_snapshot){
-				return SnapShotImplementation::create(
-					const_cast<leveldb::Snapshot *>(*options_.post_write_snapshot))
-					.QueryInterface<ISnapshot>();
-			}
-			else{
-				return use_unknown<ISnapshot>();
-			}
-
-		};
-
-		imp->set_post_write_snapshot = [this](use_unknown<ISnapshot> is){
-			if(!!is){
-				options_.post_write_snapshot = 
-					const_cast<const leveldb::Snapshot**>( static_cast<leveldb::Snapshot**>
-					(is.get_ptr_to_snapshot_ptr()));
-
-			}
-
-		};
 
 		imp->get_native = [this]()->void*{
 			return &options_;
@@ -441,6 +420,17 @@ struct DBImplementation:public implement_unknown_interfaces<DBImplementation,
 			return ret;
 
 
+		};
+
+		imp->CompactRange = [this](Slice begin,Slice end){
+			leveldb::Slice b(begin.data(),begin.size());
+			leveldb::Slice e(end.data(),end.size());
+			db_->CompactRange(&b,&e);
+
+		};
+
+		imp->CompactAll = [this](){
+			db_->CompactRange(nullptr,nullptr);
 		};
 	
 	}

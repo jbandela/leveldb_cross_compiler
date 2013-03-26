@@ -8,6 +8,16 @@ using cross_compiler_interface::implement_unknown_interfaces;
 
 namespace leveldb_cc{
 
+	class bad_status:public std::runtime_error{
+		Status s_;
+	public:
+		bad_status(const Status& s):std::runtime_error(s.ToString()),s_(s){}
+
+		const Status& status(){
+			return s_;
+		};
+	};
+
 enum CompressionType {
   // NOTE: do not change the values of existing entries, as these are
   // part of the persistent format on disk.
@@ -150,16 +160,13 @@ struct IWriteOptions
 	cross_function<IWriteOptions,0,bool()> get_sync;
 	cross_function<IWriteOptions,1,void(bool)> set_sync;
 
-	cross_function<IWriteOptions,2,use_unknown<ISnapshot>()> get_post_write_snapshot;
-	cross_function<IWriteOptions,3,void(use_unknown<ISnapshot>)> set_post_write_snapshot;
 
-	cross_function<IWriteOptions,4,void*()> get_native;
+	cross_function<IWriteOptions,2,void*()> get_native;
 
 
 
 	IWriteOptions()
-		:get_sync(this),set_sync(this),get_post_write_snapshot(this),
-		set_post_write_snapshot(this),get_native(this)
+		:get_sync(this),set_sync(this),get_native(this)
 	{}
 };
 
@@ -245,9 +252,28 @@ struct IDB
 {
 
 	cross_function<IDB,0,Status(use_unknown<IWriteOptions>,Slice,Slice)> Put;
+	void PutValue(use_unknown<IWriteOptions> wo,Slice name,Slice value){
+		Status s = Put(wo,name,value);
+		if(!s.ok()){
+			throw bad_status(s);
+		}
+	}
 	cross_function<IDB,1,Status(use_unknown<IWriteOptions>,Slice)> Delete;
+	void DeleteValue(use_unknown<IWriteOptions> wo,Slice name){
+		Status s = Delete(wo,name);
+		if(!s.ok()){
+			throw bad_status(s);
+		}
+	}
 	cross_function<IDB,2,Status(use_unknown<IWriteOptions>,
 		use_unknown<IWriteBatch>)> Write;
+	void WriteBatch(use_unknown<IWriteOptions> wo, use_unknown<IWriteBatch> wb){
+		Status s = Write(wo,wb);
+		if(!s.ok()){
+			throw bad_status(s);
+		}
+
+	}
 	cross_function<IDB,3,std::pair<Status,std::string>(use_unknown<IReadOptions>,Slice)> RawGet;
 	Status Get(use_unknown<IReadOptions> ro,Slice s, std::string* value){
 		std::pair<Status,std::string> ret = RawGet(ro,s);
@@ -255,6 +281,15 @@ struct IDB
 			*value = ret.second;
 		}
 		return ret.first;
+	}
+	std::string GetValue(use_unknown<IReadOptions> ro,Slice name){
+		
+		std::pair<Status,std::string> ret = RawGet(ro,name);
+		if(!ret.first.ok()){
+			std::string s = ret.first.ToString();
+			throw bad_status(ret.first);
+		}
+		return ret.second;
 	}
 
 	cross_function<IDB,4,use_unknown<IIterator>(use_unknown<IReadOptions>)> NewIterator;
@@ -274,11 +309,17 @@ struct IDB
 	// Note change in function signature
 	cross_function<IDB,8,std::vector<std::uint64_t>(std::vector<Range>)> GetApproximateSizes;
 
+	// Note change in function signatures
+	cross_function<IDB,9,void(Slice begin,Slice end)> CompactRange;
+
+	cross_function<IDB,10,void()> CompactAll;
+
 
 
 	IDB()
 		:Put(this),Delete(this),Write(this),RawGet(this),NewIterator(this),
-		GetSnapshot(this),ReleaseSnapshot(this),RawGetProperty(this),GetApproximateSizes(this)
+		GetSnapshot(this),ReleaseSnapshot(this),RawGetProperty(this),
+		GetApproximateSizes(this),CompactRange(this),CompactAll(this)
 	{}
 };
 
@@ -302,7 +343,14 @@ struct ILevelDBStaticFunctions
 			}
 			return ret.first;
 	}	
+	use_unknown<IDB> OpenDB(use_unknown<IOptions> options,std::string name){
+			std::pair<Status,use_unknown<IDB>> ret = RawOpen(options,name);
+			if(!ret.first.ok()){
+				throw bad_status(ret.first);
+			}
+			return ret.second;
 
+	}
 	cross_function<ILevelDBStaticFunctions,1,use_unknown<IOptions>()> CreateOptions;
 	cross_function<ILevelDBStaticFunctions,2,use_unknown<IReadOptions>()> CreateReadOptions;
 	cross_function<ILevelDBStaticFunctions,3,use_unknown<IWriteOptions>()> CreateWriteOptions;
