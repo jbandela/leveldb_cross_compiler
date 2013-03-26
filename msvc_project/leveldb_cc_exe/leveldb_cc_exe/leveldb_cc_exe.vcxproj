@@ -13,6 +13,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\leveldb_cc_exe.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\README.md" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9FD83FBA-6AF0-4B15-A4C2-54DC3FE12A95}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

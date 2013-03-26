@@ -31,7 +31,7 @@ int main(){
 		wb.Put("Name4","Paul4");
 		wb.Put("Name5","Paul5");
 		wb.Put("Name6","Paul6");
-
+		wo.set_sync(true);
 		db.WriteBatch(wo,wb);
 
 
@@ -64,6 +64,14 @@ int main(){
 		for(iter2.SeekToFirst();iter2.Valid();iter2.Next()){
 			std::cout << iter2.key().ToString() << "=" << iter2.value().ToString() << "\n";
 
+		};
+
+		std::vector<Range> vr;
+		vr.push_back(Range(Slice("Name3"),Slice("Name4")));
+		vr.push_back(Range(Slice("Name3"),Slice("Name6")));
+		auto v = db.GetApproximateSizes(vr);
+		for(auto i:v){
+			std::cout << i << std::endl;
 		};
 	}
 	auto s = creator.DestroyDB("c:/tmp/testdb",creator.CreateOptions());
