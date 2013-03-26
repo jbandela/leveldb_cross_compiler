@@ -13,13 +13,12 @@
 #ifndef STORAGE_LEVELDB_INCLUDE_STATUS_H_
 #define STORAGE_LEVELDB_INCLUDE_STATUS_H_
 
-#include "win32exports.h"
 #include <string>
 #include "leveldb/slice.h"
 
 namespace leveldb {
 
-class LEVELDB_EXPORT Status {
+class Status {
  public:
   // Create a success status.
   Status() : state_(NULL) { }
@@ -54,6 +53,12 @@ class LEVELDB_EXPORT Status {
 
   // Returns true iff the status indicates a NotFound error.
   bool IsNotFound() const { return code() == kNotFound; }
+
+  // Returns true iff the status indicates a Corruption error.
+  bool IsCorruption() const { return code() == kCorruption; }
+
+  // Returns true iff the status indicates an IOError.
+  bool IsIOError() const { return code() == kIOError; }
 
   // Return a string representation of this status suitable for printing.
   // Returns the string "OK" for success.
@@ -96,6 +101,6 @@ inline void Status::operator=(const Status& s) {
   }
 }
 
-}
+}  // namespace leveldb
 
 #endif  // STORAGE_LEVELDB_INCLUDE_STATUS_H_

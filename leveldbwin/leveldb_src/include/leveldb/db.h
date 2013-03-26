@@ -5,7 +5,6 @@
 #ifndef STORAGE_LEVELDB_INCLUDE_DB_H_
 #define STORAGE_LEVELDB_INCLUDE_DB_H_
 
-#include "win32exports.h"
 #include <stdint.h>
 #include <stdio.h>
 #include "leveldb/iterator.h"
@@ -13,8 +12,9 @@
 
 namespace leveldb {
 
+// Update Makefile if you change these
 static const int kMajorVersion = 1;
-static const int kMinorVersion = 2;
+static const int kMinorVersion = 9;
 
 struct Options;
 struct ReadOptions;
@@ -24,13 +24,13 @@ class WriteBatch;
 // Abstract handle to particular state of a DB.
 // A Snapshot is an immutable object and can therefore be safely
 // accessed from multiple threads without any external synchronization.
-class LEVELDB_EXPORT Snapshot {
+class Snapshot {
  protected:
   virtual ~Snapshot();
 };
 
 // A range of keys
-struct LEVELDB_EXPORT Range {
+struct Range {
   Slice start;          // Included in the range
   Slice limit;          // Not included in the range
 
@@ -41,7 +41,7 @@ struct LEVELDB_EXPORT Range {
 // A DB is a persistent ordered map from keys to values.
 // A DB is safe for concurrent access from multiple threads without
 // any external synchronization.
-class LEVELDB_EXPORT DB {
+class DB {
  public:
   // Open the database with the specified "name".
   // Stores a pointer to a heap-allocated database in *dbptr and returns
@@ -113,6 +113,8 @@ class LEVELDB_EXPORT DB {
   //     where <N> is an ASCII representation of a level number (e.g. "0").
   //  "leveldb.stats" - returns a multi-line string that describes statistics
   //     about the internal operation of the DB.
+  //  "leveldb.sstables" - returns a multi-line string that describes all
+  //     of the sstables that make up the db contents.
   virtual bool GetProperty(const Slice& property, std::string* value) = 0;
 
   // For each i in [0,n-1], store in "sizes[i]", the approximate
@@ -126,8 +128,17 @@ class LEVELDB_EXPORT DB {
   virtual void GetApproximateSizes(const Range* range, int n,
                                    uint64_t* sizes) = 0;
 
-  // Possible extensions:
-  // (1) Add a method to compact a range of keys
+  // Compact the underlying storage for the key range [*begin,*end].
+  // In particular, deleted and overwritten versions are discarded,
+  // and the data is rearranged to reduce the cost of operations
+  // needed to access the data.  This operation should typically only
+  // be invoked by users who understand the underlying implementation.
+  //
+  // begin==NULL is treated as a key before all keys in the database.
+  // end==NULL is treated as a key after all keys in the database.
+  // Therefore the following call will compact the entire database:
+  //    db->CompactRange(NULL, NULL);
+  virtual void CompactRange(const Slice* begin, const Slice* end) = 0;
 
  private:
   // No copying allowed
@@ -145,6 +156,6 @@ Status DestroyDB(const std::string& name, const Options& options);
 // on a database that contains important information.
 Status RepairDB(const std::string& dbname, const Options& options);
 
-}
+}  // namespace leveldb
 
 #endif  // STORAGE_LEVELDB_INCLUDE_DB_H_

@@ -21,7 +21,6 @@
 #ifndef STORAGE_LEVELDB_INCLUDE_WRITE_BATCH_H_
 #define STORAGE_LEVELDB_INCLUDE_WRITE_BATCH_H_
 
-#include "win32exports.h"
 #include <string>
 #include "leveldb/status.h"
 
@@ -29,7 +28,7 @@ namespace leveldb {
 
 class Slice;
 
-class LEVELDB_EXPORT WriteBatch {
+class WriteBatch {
  public:
   WriteBatch();
   ~WriteBatch();
@@ -60,6 +59,6 @@ class LEVELDB_EXPORT WriteBatch {
   // Intentionally copyable
 };
 
-}
+}  // namespace leveldb
 
 #endif  // STORAGE_LEVELDB_INCLUDE_WRITE_BATCH_H_

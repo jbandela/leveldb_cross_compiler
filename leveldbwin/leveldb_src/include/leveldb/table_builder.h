@@ -13,7 +13,6 @@
 #ifndef STORAGE_LEVELDB_INCLUDE_TABLE_BUILDER_H_
 #define STORAGE_LEVELDB_INCLUDE_TABLE_BUILDER_H_
 
-#include "win32exports.h"
 #include <stdint.h>
 #include "leveldb/options.h"
 #include "leveldb/status.h"
@@ -24,7 +23,7 @@ class BlockBuilder;
 class BlockHandle;
 class WritableFile;
 
-class LEVELDB_EXPORT TableBuilder {
+class TableBuilder {
  public:
   // Create a builder that will store the contents of the table it is
   // building in *file.  Does not close the file.  It is up to the
@@ -78,6 +77,7 @@ class LEVELDB_EXPORT TableBuilder {
  private:
   bool ok() const { return status().ok(); }
   void WriteBlock(BlockBuilder* block, BlockHandle* handle);
+  void WriteRawBlock(const Slice& data, CompressionType, BlockHandle* handle);
 
   struct Rep;
   Rep* rep_;
@@ -87,6 +87,6 @@ class LEVELDB_EXPORT TableBuilder {
   void operator=(const TableBuilder&);
 };
 
-}
+}  // namespace leveldb
 
 #endif  // STORAGE_LEVELDB_INCLUDE_TABLE_BUILDER_H_

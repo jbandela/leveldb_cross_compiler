@@ -5,7 +5,6 @@
 #ifndef STORAGE_LEVELDB_INCLUDE_COMPARATOR_H_
 #define STORAGE_LEVELDB_INCLUDE_COMPARATOR_H_
 
-#include "win32exports.h"
 #include <string>
 
 namespace leveldb {
@@ -16,7 +15,7 @@ class Slice;
 // used as keys in an sstable or a database.  A Comparator implementation
 // must be thread-safe since leveldb may invoke its methods concurrently
 // from multiple threads.
-class LEVELDB_EXPORT Comparator {
+class Comparator {
  public:
   virtual ~Comparator();
 
@@ -59,6 +58,6 @@ class LEVELDB_EXPORT Comparator {
 // must not be deleted.
 extern const Comparator* BytewiseComparator();
 
-}
+}  // namespace leveldb
 
 #endif  // STORAGE_LEVELDB_INCLUDE_COMPARATOR_H_
