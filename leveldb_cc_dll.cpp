@@ -18,21 +18,36 @@
 
 #endif
 
+// An interface to get the native representation
+template<class T>
+struct IGetNative
+	:public cross_compiler_interface::define_interface_unknown<T,
+	// {AAF3BE95-A1A8-4DCE-8672-CEF27CD7EEC9}
+	cross_compiler_interface::uuid<
+	0xAAF3BE95,0xA1A8,0x4DCE,0x86,0x72,0xCE,0xF2,0x7C,0xD7,0xEE,0xC9
+	>
+	>
+{
+
+
+	cross_function<IGetNative,0,void*()> get_native;
+
+
+	IGetNative()
+		:get_native(this)
+	{}
+};
+
 using namespace leveldb_cc;
 struct SnapShotImplementation:public implement_unknown_interfaces<SnapShotImplementation,
-	ISnapshot>
+	ISnapshot,IGetNative>
 {
 	const leveldb::Snapshot* snapshot_;
 
 	SnapShotImplementation(const leveldb::Snapshot* s):snapshot_(s){
-		get_implementation<ISnapshot>()->get_native = [this]()->void*{
+		get_implementation<IGetNative>()->get_native = [this]()->void*{
 			return const_cast<leveldb::Snapshot*>(snapshot_);
 		};
-
-		get_implementation<ISnapshot>()->get_ptr_to_snapshot_ptr = [this]()->void*{
-			return &snapshot_;
-		};
-
 	}
 
 
@@ -82,7 +97,8 @@ struct ComparatorFromIComparator:public leveldb::Comparator{
 };
 
 struct OptionsImplementation
-	:public implement_unknown_interfaces<OptionsImplementation,IOptions>
+	:public implement_unknown_interfaces<OptionsImplementation,IOptions,
+	IGetNative>
 {
 	leveldb::Options options_;
 
@@ -158,7 +174,7 @@ struct OptionsImplementation
 			options_.comparator = new ComparatorFromIComparator(ic);
 		};
 	
-		imp->get_native = [this]()->void*{
+		get_implementation<IGetNative>()->get_native = [this]()->void*{
 			return &options_;
 		};
 
@@ -171,7 +187,8 @@ struct OptionsImplementation
 
 
 struct ReadOptionsImplementation
-	:public implement_unknown_interfaces<ReadOptionsImplementation,IReadOptions>
+	:public implement_unknown_interfaces<ReadOptionsImplementation,IReadOptions,
+	IGetNative>
 {
 	leveldb::ReadOptions options_;
 
@@ -191,7 +208,8 @@ struct ReadOptionsImplementation
 			options_.verify_checksums = b;
 		};
 
-		imp->get_native = [this](){return &options_;};
+		get_implementation<IGetNative>()->get_native = 
+			[this](){return &options_;};
 
 	};
 
@@ -200,7 +218,7 @@ struct ReadOptionsImplementation
 
 struct WriteOptionsImplementation
 	:public implement_unknown_interfaces<WriteOptionsImplementation,
-		IWriteOptions>
+		IWriteOptions,IGetNative>
 {
 	leveldb::WriteOptions options_;
 
@@ -216,7 +234,7 @@ struct WriteOptionsImplementation
 		};
 
 
-		imp->get_native = [this]()->void*{
+		get_implementation<IGetNative>()->get_native = [this]()->void*{
 			return &options_;
 
 		};
@@ -256,14 +274,13 @@ Status StatusFromLevelDBStatus(leveldb::Status& s){
 
 struct WriteBatchImplementation
 	:public implement_unknown_interfaces<WriteBatchImplementation,
-	IWriteBatch>
+	IWriteBatch,IGetNative>
 {
 	leveldb::WriteBatch wb_;
 
 	WriteBatchImplementation(){
 		auto imp =  get_implementation<IWriteBatch>();
 
-		imp->get_native = [this]()->void*{ return &wb_;};
 
 		imp->Put = [this](Slice key,Slice value){
 			wb_.Put(leveldb::Slice(key.data(),key.size()),
@@ -285,6 +302,9 @@ struct WriteBatchImplementation
 			return StatusFromLevelDBStatus(s);
 
 		};
+
+		get_implementation<IGetNative>()->get_native = 
+			[this]()->void*{ return &wb_;};
 	}
 
 
@@ -343,7 +363,8 @@ struct DBImplementation:public implement_unknown_interfaces<DBImplementation,
 
 		imp->Put = [this](use_unknown<IWriteOptions> wo,Slice key,Slice value)
 		->Status{
-			auto s = db_->Put(*static_cast<leveldb::WriteOptions*>(wo.get_native()),
+			auto s = db_->Put(*static_cast<leveldb::WriteOptions*>(wo
+				.QueryInterface<IGetNative>().get_native()),
 				leveldb::Slice(key.data(),key.size()),
 				leveldb::Slice(value.data(),value.size()));
 			return StatusFromLevelDBStatus(s);
@@ -352,7 +373,8 @@ struct DBImplementation:public implement_unknown_interfaces<DBImplementation,
 
 		imp->Delete = [this](use_unknown<IWriteOptions> wo,Slice key)
 		->Status{
-			auto s = db_->Delete(*static_cast<leveldb::WriteOptions*>(wo.get_native()),
+			auto s = db_->Delete(*static_cast<leveldb::WriteOptions*>(wo
+				.QueryInterface<IGetNative>().get_native()),
 				leveldb::Slice(key.data(),key.size()));
 			return StatusFromLevelDBStatus(s);
 
@@ -361,28 +383,33 @@ struct DBImplementation:public implement_unknown_interfaces<DBImplementation,
 		imp->Write = [this](use_unknown<IWriteOptions> wo,
 			use_unknown<IWriteBatch> wb)
 		->Status{
-			auto s = db_->Write(*static_cast<leveldb::WriteOptions*>(wo.get_native()),
-				static_cast<leveldb::WriteBatch*>(wb.get_native()));
+			auto s = db_->Write(*static_cast<leveldb::WriteOptions*>(wo
+				.QueryInterface<IGetNative>().get_native()),
+				static_cast<leveldb::WriteBatch*>(wb
+				.QueryInterface<IGetNative>().get_native()));
 			return StatusFromLevelDBStatus(s);
 
 		};
 	
 	
-		imp->RawGet = [this](use_unknown<IReadOptions> ro,
-			Slice key)
-		->std::pair<Status,std::string>{
+		imp->Get = [this](use_unknown<IReadOptions> ro,
+			Slice key,out<std::string> oret)
+		{
 			std::string value;
 
-			auto s = db_->Get(*static_cast<leveldb::ReadOptions*>(ro.get_native()),
+			auto s = db_->Get(*static_cast<leveldb::ReadOptions*>(ro
+				.QueryInterface<IGetNative>().get_native()),
 				leveldb::Slice(key.data(),key.size()),
 				&value);
-			return std::make_pair(StatusFromLevelDBStatus(s),value);
+			oret.set(value);
+			return StatusFromLevelDBStatus(s);
 
 		};
 	
 		imp->NewIterator = [this](use_unknown<IReadOptions> ro)->use_unknown<IIterator>{
 			return IteratorImplementation::create(db_->NewIterator(
-				*static_cast<leveldb::ReadOptions*>(ro.get_native())))
+				*static_cast<leveldb::ReadOptions*>(ro
+				.QueryInterface<IGetNative>().get_native())))
 				.QueryInterface<IIterator>();
 
 		};
@@ -394,15 +421,17 @@ struct DBImplementation:public implement_unknown_interfaces<DBImplementation,
 		};
 
 		imp->ReleaseSnapshot = [this](use_unknown<ISnapshot> s){
-			db_->ReleaseSnapshot(static_cast<leveldb::Snapshot*>(s.get_native()));
+			db_->ReleaseSnapshot(static_cast<leveldb::Snapshot*>(s
+				.QueryInterface<IGetNative>().get_native()));
 
 		};
 
-		imp->RawGetProperty = [this](Slice prop){
-			std::pair<bool,std::string> ret;
-			ret.first = db_->GetProperty(leveldb::Slice(prop.data(),prop.size()),
-				&ret.second);
-			return ret;
+		imp->GetProperty = [this](Slice prop,out<std::string> oret){
+			std::string value;
+			auto b = db_->GetProperty(leveldb::Slice(prop.data(),prop.size()),
+				&value);
+			oret.set(value);
+			return b;
 		};
 
 		imp->GetApproximateSizes = [this](std::vector<Range> v){
@@ -453,11 +482,13 @@ struct LevelDBStaticFunctions
 	LevelDBStaticFunctions(){
 		auto imp = get_implementation<ILevelDBStaticFunctions>();
 
-	imp->RawOpen = [](use_unknown<IOptions> options,std::string name){
+	imp->Open = [](use_unknown<IOptions> options,std::string name,out<use_unknown<IDB>> oret){
 		leveldb::DB* db = 0;
-		auto s = leveldb::DB::Open(*static_cast<leveldb::Options*>(options.get_native()),
+		auto s = leveldb::DB::Open(*static_cast<leveldb::Options*>(options
+			.QueryInterface<IGetNative>().get_native()),
 			name,&db);
-		return std::make_pair(StatusFromLevelDBStatus(s),DBImplementation::create(db).QueryInterface<IDB>());
+		oret.set(DBImplementation::create(db).QueryInterface<IDB>());
+		return StatusFromLevelDBStatus(s);
 
 	};
 
@@ -476,12 +507,14 @@ struct LevelDBStaticFunctions
 		return WriteBatchImplementation::create().QueryInterface<IWriteBatch>();
 	};
 	imp->DestroyDB = [](std::string name, use_unknown<IOptions> options){
-		auto s = leveldb::DestroyDB(name,*static_cast<leveldb::Options*>(options.get_native()));
+		auto s = leveldb::DestroyDB(name,*static_cast<leveldb::Options*>(options
+			.QueryInterface<IGetNative>().get_native()));
 		return StatusFromLevelDBStatus(s);
 	};
 
 	imp->RepairDB = [](std::string name, use_unknown<IOptions> options){
-		auto s = leveldb::RepairDB(name,*static_cast<leveldb::Options*>(options.get_native()));
+		auto s = leveldb::RepairDB(name,*static_cast<leveldb::Options*>(options
+			.QueryInterface<IGetNative>().get_native()));
 		return StatusFromLevelDBStatus(s);
 	};
 

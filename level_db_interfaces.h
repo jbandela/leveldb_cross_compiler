@@ -5,6 +5,7 @@
 using cross_compiler_interface::cross_function;
 using cross_compiler_interface::use_unknown;
 using cross_compiler_interface::implement_unknown_interfaces;
+using cross_compiler_interface::out;
 
 namespace leveldb_cc{
 
@@ -34,13 +35,7 @@ struct ISnapshot
 	>
 	>
 {
-
-	
-	cross_function<ISnapshot,0,void*()> get_native;
-	cross_function<ISnapshot,1,void*()> get_ptr_to_snapshot_ptr;
-
 	ISnapshot()
-		:get_native(this),get_ptr_to_snapshot_ptr(this)
 	{}
 };
 
@@ -105,9 +100,6 @@ struct IOptions
 	cross_function<IOptions,16,void(use_unknown<IComparator>)> set_comparator;
 	
 	
-	cross_function<IOptions,17,void*()> get_native;
-
-
 	IOptions()
 		:get_create_if_missing(this),set_create_if_missing(this),get_error_if_exists(this),
 		set_error_if_exists(this),get_paranoid_checks(this),set_paranoid_checks(this),
@@ -116,7 +108,7 @@ struct IOptions
 		set_max_open_files(this),
 		get_block_size(this),set_block_size(this),get_block_restart_interval(this),
 		set_block_restart_interval(this),get_compression(this),set_compression(this),
-		set_comparator(this),get_native(this)
+		set_comparator(this)
 	{}
 };
 
@@ -137,12 +129,11 @@ struct IReadOptions
 
 	cross_function<IReadOptions,4,void(use_unknown<ISnapshot>)> set_snapshot;
 
-	cross_function<IReadOptions,5,void*()> get_native;
 
 	IReadOptions()
 		:get_verify_checksums(this),set_verify_checksums(this),
 		get_fill_cache(this),set_fill_cache(this),
-		set_snapshot(this),get_native(this)
+		set_snapshot(this)
 
 	{}
 };
@@ -161,12 +152,8 @@ struct IWriteOptions
 	cross_function<IWriteOptions,1,void(bool)> set_sync;
 
 
-	cross_function<IWriteOptions,2,void*()> get_native;
-
-
-
 	IWriteOptions()
-		:get_sync(this),set_sync(this),get_native(this)
+		:get_sync(this),set_sync(this)
 	{}
 };
 
@@ -201,15 +188,14 @@ struct IWriteBatch
 	>
 {
 
-		cross_function<IWriteBatch,0,void*()> get_native;
-		cross_function<IWriteBatch,1,void(Slice,Slice)> Put;
-		cross_function<IWriteBatch,2,void(Slice)> Delete;
-		cross_function<IWriteBatch,3,void()> Clear;
-		cross_function<IWriteBatch,4,Status(use_unknown<IHandler>)> Iterate;
+		cross_function<IWriteBatch,0,void(Slice,Slice)> Put;
+		cross_function<IWriteBatch,1,void(Slice)> Delete;
+		cross_function<IWriteBatch,2,void()> Clear;
+		cross_function<IWriteBatch,3,Status(use_unknown<IHandler>)> Iterate;
 
 
 	IWriteBatch()
-		:get_native(this),Put(this),Delete(this),Clear(this),Iterate(this)
+		:Put(this),Delete(this),Clear(this),Iterate(this)
 	{}
 };
 
@@ -274,22 +260,15 @@ struct IDB
 		}
 
 	}
-	cross_function<IDB,3,std::pair<Status,std::string>(use_unknown<IReadOptions>,Slice)> RawGet;
-	Status Get(use_unknown<IReadOptions> ro,Slice s, std::string* value){
-		std::pair<Status,std::string> ret = RawGet(ro,s);
-		if(ret.first.ok()){
-			*value = ret.second;
-		}
-		return ret.first;
-	}
+	cross_function<IDB,3,Status(use_unknown<IReadOptions>,
+		Slice,out<std::string>)> Get;
 	std::string GetValue(use_unknown<IReadOptions> ro,Slice name){
-		
-		std::pair<Status,std::string> ret = RawGet(ro,name);
-		if(!ret.first.ok()){
-			std::string s = ret.first.ToString();
-			throw bad_status(ret.first);
+		std::string ret;
+		Status s = Get(ro,name,&ret);
+		if(!s.ok()){
+			throw bad_status(s);
 		}
-		return ret.second;
+		return ret;
 	}
 
 	cross_function<IDB,4,use_unknown<IIterator>(use_unknown<IReadOptions>)> NewIterator;
@@ -297,14 +276,7 @@ struct IDB
 	cross_function<IDB,5,use_unknown<ISnapshot>()> GetSnapshot;
 	cross_function<IDB,6,void(use_unknown<ISnapshot>)> ReleaseSnapshot;
 
-	cross_function<IDB,7,std::pair<bool,std::string>(Slice)> RawGetProperty;
-	bool GetProperty(Slice property,std::string* value){
-		std::pair<bool,std::string> ret = RawGetProperty(property);
-		if(ret.first){
-			*value = ret.second;
-		}
-		return ret.first;
-	}
+	cross_function<IDB,7,bool(Slice,out<std::string>)> GetProperty;
 
 	// Note change in function signature
 	cross_function<IDB,8,std::vector<std::uint64_t>(std::vector<Range>)> GetApproximateSizes;
@@ -317,8 +289,8 @@ struct IDB
 
 
 	IDB()
-		:Put(this),Delete(this),Write(this),RawGet(this),NewIterator(this),
-		GetSnapshot(this),ReleaseSnapshot(this),RawGetProperty(this),
+		:Put(this),Delete(this),Write(this),Get(this),NewIterator(this),
+		GetSnapshot(this),ReleaseSnapshot(this),GetProperty(this),
 		GetApproximateSizes(this),CompactRange(this),CompactAll(this)
 	{}
 };
@@ -333,22 +305,15 @@ struct ILevelDBStaticFunctions
 	>
 	>
 {
-	cross_function<ILevelDBStaticFunctions,0,std::pair<Status,use_unknown<IDB>>
-		(use_unknown<IOptions>,std::string name)> RawOpen;
-	Status Open(use_unknown<IOptions> options,std::string name,
-		use_unknown<IDB>* dbptr){
-			std::pair<Status,use_unknown<IDB>> ret = RawOpen(options,name);
-			if(ret.first.ok()){
-				*dbptr = ret.second;
-			}
-			return ret.first;
-	}	
+	cross_function<ILevelDBStaticFunctions,0,Status
+		(use_unknown<IOptions>,std::string name,out<use_unknown<IDB>>)> Open;
 	use_unknown<IDB> OpenDB(use_unknown<IOptions> options,std::string name){
-			std::pair<Status,use_unknown<IDB>> ret = RawOpen(options,name);
-			if(!ret.first.ok()){
-				throw bad_status(ret.first);
+		use_unknown<IDB> ret;
+			Status s = Open(options,name,&ret);
+			if(!s.ok()){
+				throw bad_status(s);
 			}
-			return ret.second;
+			return ret;
 
 	}
 	cross_function<ILevelDBStaticFunctions,1,use_unknown<IOptions>()> CreateOptions;
@@ -363,7 +328,7 @@ struct ILevelDBStaticFunctions
 
 
 	ILevelDBStaticFunctions()
-		:RawOpen(this),CreateOptions(this),CreateReadOptions(this),
+		:Open(this),CreateOptions(this),CreateReadOptions(this),
 		CreateWriteOptions(this),CreateWriteBatch(this), DestroyDB(this),RepairDB(this)
 	{}
 };
