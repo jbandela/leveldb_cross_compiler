@@ -2,6 +2,8 @@
 #include "leveldb\db.h"
 #include "leveldb\comparator.h"
 #include "leveldb\write_batch.h"
+#include "leveldb\filter_policy.h"
+#include "leveldb\cache.h"
 
 #include "level_db_interfaces.h"
 
@@ -58,41 +60,69 @@ struct ComparatorFromIComparator:public leveldb::Comparator{
 
 	ComparatorFromIComparator(use_unknown<IComparator> ic):ic_(ic){}
 
-	  int Compare(const leveldb::Slice& a, const leveldb::Slice& b)const override{
-		  Slice sa(a.data(),a.size());
-		  Slice sb(b.data(),b.size());
-		  return ic_.Compare(sa,sb);
+	int Compare(const leveldb::Slice& a, const leveldb::Slice& b)const override{
+		Slice sa(a.data(),a.size());
+		Slice sb(b.data(),b.size());
+		return ic_.Compare(sa,sb);
 
-	  }
+	}
 
-   const char* Name() const override{
-	   return ic_.Name();
+	const char* Name() const override{
+		return ic_.Name();
 
-  }
+	}
 
-  // Advanced functions: these are used to reduce the space requirements
-  // for internal data structures like index blocks.
+	// Advanced functions: these are used to reduce the space requirements
+	// for internal data structures like index blocks.
 
-  // If *start < limit, changes *start to a short string in [start,limit).
-  // Simple comparator implementations may return with *start unchanged,
-  // i.e., an implementation of this method that does nothing is correct.
-  virtual void FindShortestSeparator(
-	  std::string* start,
-	  const leveldb::Slice& limit) const override{
-		  Slice s(limit.data(),limit.size());
-		  *start = ic_.FindShortestSeparator(s);
+	// If *start < limit, changes *start to a short string in [start,limit).
+	// Simple comparator implementations may return with *start unchanged,
+	// i.e., an implementation of this method that does nothing is correct.
+	virtual void FindShortestSeparator(
+		std::string* start,
+		const leveldb::Slice& limit) const override{
+			Slice s(limit.data(),limit.size());
+			*start = ic_.FindShortestSeparator(s);
 
 
-  };
+	};
 
-  // Changes *key to a short string >= *key.
-  // Simple comparator implementations may return with *key unchanged,
-  // i.e., an implementation of this method that does nothing is correct.
-  virtual void FindShortSuccessor(std::string* key) const override{
-	  *key = ic_.FindShortSuccessor(*key);
+	// Changes *key to a short string >= *key.
+	// Simple comparator implementations may return with *key unchanged,
+	// i.e., an implementation of this method that does nothing is correct.
+	virtual void FindShortSuccessor(std::string* key) const override{
+		*key = ic_.FindShortSuccessor(*key);
 
-  }
+	}
 
+
+};
+
+struct CacheImplementation
+	:public implement_unknown_interfaces<CacheImplementation,ICache,
+	IGetNative>
+{
+	std::unique_ptr<leveldb::Cache> cache_;
+
+	CacheImplementation(leveldb::Cache* c):cache_(c){
+		get_implementation<IGetNative>()->get_native = 
+			[this]()->void*{return cache_.get();};
+
+	}
+
+};
+
+struct FilterPolicyImplementation
+	:public implement_unknown_interfaces<FilterPolicyImplementation,IFilterPolicy,
+	IGetNative>
+{
+	std::unique_ptr<const leveldb::FilterPolicy> filter_;
+
+	FilterPolicyImplementation(const leveldb::FilterPolicy* f):filter_(f){
+		get_implementation<IGetNative>()->get_native = 
+			[this]()->void*{return const_cast<leveldb::FilterPolicy*>(filter_.get());};
+
+	}
 
 };
 
@@ -173,7 +203,16 @@ struct OptionsImplementation
 		imp->set_comparator = [this](use_unknown<IComparator> ic){
 			options_.comparator = new ComparatorFromIComparator(ic);
 		};
-	
+
+		imp->set_block_cache = [this](use_unknown<ICache> ic){
+			options_.block_cache = static_cast<leveldb::Cache*>(
+				ic.QueryInterface<IGetNative>().get_native());
+		};
+		imp->set_filter_policy = [this](use_unknown<IFilterPolicy> ic){
+			options_.filter_policy = static_cast<leveldb::FilterPolicy*>(
+				ic.QueryInterface<IGetNative>().get_native());
+		};
+
 		get_implementation<IGetNative>()->get_native = [this]()->void*{
 			return &options_;
 		};
@@ -218,7 +257,7 @@ struct ReadOptionsImplementation
 
 struct WriteOptionsImplementation
 	:public implement_unknown_interfaces<WriteOptionsImplementation,
-		IWriteOptions,IGetNative>
+	IWriteOptions,IGetNative>
 {
 	leveldb::WriteOptions options_;
 
@@ -316,7 +355,7 @@ struct IteratorImplementation
 		std::unique_ptr<leveldb::Iterator> iter_;
 		IteratorImplementation(leveldb::Iterator* iter):iter_(iter){
 			auto imp = get_implementation<IIterator>();
-			
+
 			imp->Valid = [this]()->bool{return iter_->Valid();};
 
 			imp->SeekToFirst = [this](){iter_->SeekToFirst();};
@@ -340,7 +379,7 @@ struct IteratorImplementation
 				auto s = iter_->value();
 				return Slice(s.data(),s.size());
 			};
-			
+
 			imp->status = [this]()->Status{
 				auto s = iter_->status();
 				return StatusFromLevelDBStatus(s);
@@ -358,40 +397,40 @@ struct DBImplementation:public implement_unknown_interfaces<DBImplementation,
 	std::unique_ptr<leveldb::DB> db_;
 
 	DBImplementation(leveldb::DB* db):db_(db){
-	
+
 		auto imp = get_implementation<IDB>();
 
 		imp->Put = [this](use_unknown<IWriteOptions> wo,Slice key,Slice value)
-		->Status{
-			auto s = db_->Put(*static_cast<leveldb::WriteOptions*>(wo
-				.QueryInterface<IGetNative>().get_native()),
-				leveldb::Slice(key.data(),key.size()),
-				leveldb::Slice(value.data(),value.size()));
-			return StatusFromLevelDBStatus(s);
+			->Status{
+				auto s = db_->Put(*static_cast<leveldb::WriteOptions*>(wo
+					.QueryInterface<IGetNative>().get_native()),
+					leveldb::Slice(key.data(),key.size()),
+					leveldb::Slice(value.data(),value.size()));
+				return StatusFromLevelDBStatus(s);
 
 		};
 
 		imp->Delete = [this](use_unknown<IWriteOptions> wo,Slice key)
-		->Status{
-			auto s = db_->Delete(*static_cast<leveldb::WriteOptions*>(wo
-				.QueryInterface<IGetNative>().get_native()),
-				leveldb::Slice(key.data(),key.size()));
-			return StatusFromLevelDBStatus(s);
+			->Status{
+				auto s = db_->Delete(*static_cast<leveldb::WriteOptions*>(wo
+					.QueryInterface<IGetNative>().get_native()),
+					leveldb::Slice(key.data(),key.size()));
+				return StatusFromLevelDBStatus(s);
 
 		};
 
 		imp->Write = [this](use_unknown<IWriteOptions> wo,
 			use_unknown<IWriteBatch> wb)
-		->Status{
-			auto s = db_->Write(*static_cast<leveldb::WriteOptions*>(wo
-				.QueryInterface<IGetNative>().get_native()),
-				static_cast<leveldb::WriteBatch*>(wb
-				.QueryInterface<IGetNative>().get_native()));
-			return StatusFromLevelDBStatus(s);
+			->Status{
+				auto s = db_->Write(*static_cast<leveldb::WriteOptions*>(wo
+					.QueryInterface<IGetNative>().get_native()),
+					static_cast<leveldb::WriteBatch*>(wb
+					.QueryInterface<IGetNative>().get_native()));
+				return StatusFromLevelDBStatus(s);
 
 		};
-	
-	
+
+
 		imp->Get = [this](use_unknown<IReadOptions> ro,
 			Slice key,out<std::string> oret)
 		{
@@ -405,7 +444,7 @@ struct DBImplementation:public implement_unknown_interfaces<DBImplementation,
 			return StatusFromLevelDBStatus(s);
 
 		};
-	
+
 		imp->NewIterator = [this](use_unknown<IReadOptions> ro)->use_unknown<IIterator>{
 			return IteratorImplementation::create(db_->NewIterator(
 				*static_cast<leveldb::ReadOptions*>(ro
@@ -439,7 +478,7 @@ struct DBImplementation:public implement_unknown_interfaces<DBImplementation,
 			std::vector<leveldb::Range> ranges;
 			for(auto& r:v){
 				ranges.push_back(leveldb::Range(
-					
+
 					leveldb::Slice(r.first.data(),r.first.size()),
 					leveldb::Slice(r.second.data(),r.second.size())));
 
@@ -461,12 +500,12 @@ struct DBImplementation:public implement_unknown_interfaces<DBImplementation,
 		imp->CompactAll = [this](){
 			db_->CompactRange(nullptr,nullptr);
 		};
-	
+
 	}
 
 
 
-	
+
 
 
 
@@ -482,59 +521,67 @@ struct LevelDBStaticFunctions
 	LevelDBStaticFunctions(){
 		auto imp = get_implementation<ILevelDBStaticFunctions>();
 
-	imp->Open = [](use_unknown<IOptions> options,std::string name,out<use_unknown<IDB>> oret){
-		leveldb::DB* db = 0;
-		auto s = leveldb::DB::Open(*static_cast<leveldb::Options*>(options
-			.QueryInterface<IGetNative>().get_native()),
-			name,&db);
-		oret.set(DBImplementation::create(db).QueryInterface<IDB>());
-		return StatusFromLevelDBStatus(s);
+		imp->Open = [](use_unknown<IOptions> options,std::string name,out<use_unknown<IDB>> oret){
+			leveldb::DB* db = 0;
+			auto s = leveldb::DB::Open(*static_cast<leveldb::Options*>(options
+				.QueryInterface<IGetNative>().get_native()),
+				name,&db);
+			oret.set(DBImplementation::create(db).QueryInterface<IDB>());
+			return StatusFromLevelDBStatus(s);
 
-	};
+		};
 
-	imp->CreateOptions = [](){
-		return OptionsImplementation::create().QueryInterface<IOptions>();
-	};
+		imp->CreateOptions = [](){
+			return OptionsImplementation::create().QueryInterface<IOptions>();
+		};
 
-	imp->CreateReadOptions = [](){
-		return ReadOptionsImplementation::create().QueryInterface<IReadOptions>();
-	};
+		imp->CreateReadOptions = [](){
+			return ReadOptionsImplementation::create().QueryInterface<IReadOptions>();
+		};
 
-	imp->CreateWriteOptions = [](){
-		return WriteOptionsImplementation::create().QueryInterface<IWriteOptions>();
-	};
-	imp->CreateWriteBatch = [](){
-		return WriteBatchImplementation::create().QueryInterface<IWriteBatch>();
-	};
-	imp->DestroyDB = [](std::string name, use_unknown<IOptions> options){
-		auto s = leveldb::DestroyDB(name,*static_cast<leveldb::Options*>(options
-			.QueryInterface<IGetNative>().get_native()));
-		return StatusFromLevelDBStatus(s);
-	};
+		imp->CreateWriteOptions = [](){
+			return WriteOptionsImplementation::create().QueryInterface<IWriteOptions>();
+		};
+		imp->CreateWriteBatch = [](){
+			return WriteBatchImplementation::create().QueryInterface<IWriteBatch>();
+		};
+		imp->DestroyDB = [](std::string name, use_unknown<IOptions> options){
+			auto s = leveldb::DestroyDB(name,*static_cast<leveldb::Options*>(options
+				.QueryInterface<IGetNative>().get_native()));
+			return StatusFromLevelDBStatus(s);
+		};
 
-	imp->RepairDB = [](std::string name, use_unknown<IOptions> options){
-		auto s = leveldb::RepairDB(name,*static_cast<leveldb::Options*>(options
-			.QueryInterface<IGetNative>().get_native()));
-		return StatusFromLevelDBStatus(s);
-	};
+		imp->RepairDB = [](std::string name, use_unknown<IOptions> options){
+			auto s = leveldb::RepairDB(name,*static_cast<leveldb::Options*>(options
+				.QueryInterface<IGetNative>().get_native()));
+			return StatusFromLevelDBStatus(s);
+		};
 
 
+		imp->NewLRUCache = [](std::uint64_t capacity){
+			return CacheImplementation::create(leveldb::NewLRUCache(static_cast<std::size_t>(capacity)))
+				.QueryInterface<ICache>();
+
+		};
+
+		imp->NewBloomFilterPolicy = [](std::int32_t bits){
+			return FilterPolicyImplementation::create(leveldb::NewBloomFilterPolicy(bits))
+				.QueryInterface<IFilterPolicy>();
+		};
 	}
-
-
 };
 
 
 extern "C"{
 
- cross_compiler_interface::portable_base* CROSS_CALL_CALLING_CONVENTION CreateLevelDBStaticFunctions(){
-	auto ret_int = LevelDBStaticFunctions::create();
+	cross_compiler_interface::portable_base* CROSS_CALL_CALLING_CONVENTION CreateLevelDBStaticFunctions(){
+		auto ret_int = LevelDBStaticFunctions::create();
 
-	auto ret = ret_int.get_portable_base();
+		auto ret = ret_int.get_portable_base();
 
-	ret_int.reset_portable_base();
+		ret_int.reset_portable_base();
 
 
-	return ret;
-}
+		return ret;
+	}
 }

@@ -61,7 +61,44 @@ struct IComparator
 	{}
 };
 
-// Leave out support for logger,env, and cache
+
+
+
+// Only support LRUCache for now
+template<class T>
+struct ICache
+	:public cross_compiler_interface::define_interface_unknown<T,
+	// {1AF4C611-D729-4B15-91C0-D619FDDD4D85}
+	cross_compiler_interface::uuid<
+	0x1AF4C611,0xD729,0x4B15,0x91,0xC0,0xD6,0x19,0xFD,0xDD,0x4D,0x85
+	>
+	>
+{
+
+
+	ICache()
+
+	{}
+};
+
+
+// Only support bloom filter
+template<class T>
+struct IFilterPolicy
+	:public cross_compiler_interface::define_interface_unknown<T,
+	// {46559B7D-60E6-4D41-8B41-4262DD6F739C}
+	cross_compiler_interface::uuid<
+	0x46559B7D,0x60E6,0x4D41,0x8B,0x41,0x42,0x62,0xDD,0x6F,0x73,0x9C
+	>
+	>
+{
+
+
+	IFilterPolicy()
+	{}
+};
+
+
 
 template<class T>
 struct IOptions
@@ -99,6 +136,10 @@ struct IOptions
 
 	cross_function<IOptions,16,void(use_unknown<IComparator>)> set_comparator;
 	
+	cross_function<IOptions,17,void(use_unknown<ICache>)> set_block_cache;
+
+	cross_function<IOptions,18,void(use_unknown<IFilterPolicy>)> set_filter_policy;
+
 	
 	IOptions()
 		:get_create_if_missing(this),set_create_if_missing(this),get_error_if_exists(this),
@@ -108,7 +149,8 @@ struct IOptions
 		set_max_open_files(this),
 		get_block_size(this),set_block_size(this),get_block_restart_interval(this),
 		set_block_restart_interval(this),get_compression(this),set_compression(this),
-		set_comparator(this)
+		set_comparator(this),set_block_cache(this),
+		set_filter_policy(this)
 	{}
 };
 
@@ -325,11 +367,17 @@ struct ILevelDBStaticFunctions
 	cross_function<ILevelDBStaticFunctions,6,Status(std::string name,use_unknown<IOptions>)>
 		RepairDB;
 
+	cross_function<ILevelDBStaticFunctions,7,use_unknown<ICache>(std::uint64_t)>
+		NewLRUCache;
+
+	cross_function<ILevelDBStaticFunctions,8,use_unknown<IFilterPolicy>(std::int32_t)>
+		NewBloomFilterPolicy;
 
 
 	ILevelDBStaticFunctions()
 		:Open(this),CreateOptions(this),CreateReadOptions(this),
-		CreateWriteOptions(this),CreateWriteBatch(this), DestroyDB(this),RepairDB(this)
+		CreateWriteOptions(this),CreateWriteBatch(this), DestroyDB(this),
+		RepairDB(this),NewLRUCache(this), NewBloomFilterPolicy(this)
 	{}
 };
 
