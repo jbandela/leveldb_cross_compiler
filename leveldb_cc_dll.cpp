@@ -201,16 +201,29 @@ struct OptionsImplementation
 		};
 
 		imp->set_comparator = [this](use_unknown<IComparator> ic){
-			options_.comparator = new ComparatorFromIComparator(ic);
+			if(!ic){
+				throw cross_compiler_interface::error_pointer();
+				//options_.comparator = nullptr;
+			}else{
+				options_.comparator = new ComparatorFromIComparator(ic);
+			}
 		};
 
 		imp->set_block_cache = [this](use_unknown<ICache> ic){
+			if(!ic){
+				options_.block_cache = nullptr;
+			}else{
 			options_.block_cache = static_cast<leveldb::Cache*>(
 				ic.QueryInterface<IGetNative>().get_native());
+			}
 		};
 		imp->set_filter_policy = [this](use_unknown<IFilterPolicy> ic){
+			if(!ic){
+				options_.filter_policy = nullptr;
+			}else{
 			options_.filter_policy = static_cast<leveldb::FilterPolicy*>(
 				ic.QueryInterface<IGetNative>().get_native());
+			}
 		};
 
 		get_implementation<IGetNative>()->get_native = [this]()->void*{
@@ -247,6 +260,15 @@ struct ReadOptionsImplementation
 			options_.verify_checksums = b;
 		};
 
+		imp->set_snapshot = [this](use_unknown<ISnapshot> s){
+			if(!s){
+				options_.snapshot = nullptr;
+			}else{
+				options_.snapshot = static_cast<leveldb::Snapshot*>(s.QueryInterface<IGetNative>()
+					.get_native());
+			}
+
+		};
 		get_implementation<IGetNative>()->get_native = 
 			[this](){return &options_;};
 
