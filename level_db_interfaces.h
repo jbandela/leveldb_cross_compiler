@@ -28,7 +28,7 @@ enum CompressionType {
 
 template<class T>
 struct ISnapshot
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {D6F3D379-9E73-407F-846E-CCAFA1A3EA6E}
 	cross_compiler_interface::uuid<
 	0xD6F3D379,0x9E73,0x407F,0x84,0x6E,0xCC,0xAF,0xA1,0xA3,0xEA,0x6E
@@ -41,7 +41,7 @@ struct ISnapshot
 
 template<class T>
 struct IComparator
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {C5B46BB4-7CDC-41E9-BCC7-3EBAF62C8873}
 	cross_compiler_interface::uuid<
 	0xC5B46BB4,0x7CDC,0x41E9,0xBC,0xC7,0x3E,0xBA,0xF6,0x2C,0x88,0x73
@@ -67,7 +67,7 @@ struct IComparator
 // Only support LRUCache for now
 template<class T>
 struct ICache
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {1AF4C611-D729-4B15-91C0-D619FDDD4D85}
 	cross_compiler_interface::uuid<
 	0x1AF4C611,0xD729,0x4B15,0x91,0xC0,0xD6,0x19,0xFD,0xDD,0x4D,0x85
@@ -85,7 +85,7 @@ struct ICache
 // Only support bloom filter
 template<class T>
 struct IFilterPolicy
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {46559B7D-60E6-4D41-8B41-4262DD6F739C}
 	cross_compiler_interface::uuid<
 	0x46559B7D,0x60E6,0x4D41,0x8B,0x41,0x42,0x62,0xDD,0x6F,0x73,0x9C
@@ -102,7 +102,7 @@ struct IFilterPolicy
 
 template<class T>
 struct IOptions
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {FC12AA30-D42B-48FB-9A93-3716D962BFB7}
 	cross_compiler_interface::uuid<
 	0xFC12AA30,0xD42B,0x48FB,0x9A,0x93,0x37,0x16,0xD9,0x62,0xBF,0xB7
@@ -156,7 +156,7 @@ struct IOptions
 
 template<class T>
 struct IReadOptions
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {644668DE-09EC-49B1-A715-AD0D16CD8259}
 	cross_compiler_interface::uuid<
 	0x644668DE,0x09EC,0x49B1,0xA7,0x15,0xAD,0x0D,0x16,0xCD,0x82,0x59
@@ -183,7 +183,7 @@ struct IReadOptions
 
 template<class T>
 struct IWriteOptions
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {23ACDD39-9502-42A0-B01D-F65E12859663}
 	cross_compiler_interface::uuid<
 	0x23ACDD39,0x9502,0x42A0,0xB0,0x1D,0xF6,0x5E,0x12,0x85,0x96,0x63
@@ -201,7 +201,7 @@ struct IWriteOptions
 
 template<class T>
 struct IHandler
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {549DA77F-2FC1-449F-9749-2E8F83F94BD1}
 	cross_compiler_interface::uuid<
 	0x549DA77F,0x2FC1,0x449F,0x97,0x49,0x2E,0x8F,0x83,0xF9,0x4B,0xD1
@@ -222,7 +222,7 @@ struct IHandler
 
 template<class T>
 struct IWriteBatch
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {EF48CDBF-66E3-487C-921B-DD794BC56A03}
 	cross_compiler_interface::uuid<
 	0xEF48CDBF,0x66E3,0x487C,0x92,0x1B,0xDD,0x79,0x4B,0xC5,0x6A,0x03
@@ -243,7 +243,7 @@ struct IWriteBatch
 
 template<class T>
 struct IIterator
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {6F230C64-A115-4AF7-81E3-05D55B63980B}
 	cross_compiler_interface::uuid<
 	0x6F230C64,0xA115,0x4AF7,0x81,0xE3,0x05,0xD5,0x5B,0x63,0x98,0x0B
@@ -271,7 +271,7 @@ struct IIterator
 
 template<class T>
 struct IDB
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {E94D09D0-CDB1-4AB3-BCAC-BDB2FC0B2A94}
 	cross_compiler_interface::uuid<
 	0xE94D09D0,0xCDB1,0x4AB3,0xBC,0xAC,0xBD,0xB2,0xFC,0x0B,0x2A,0x94
@@ -340,7 +340,7 @@ struct IDB
 
 template<class T>
 struct ILevelDBStaticFunctions
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {989DCE03-99AE-4DB2-9D74-A6FAEFEC3628}
 	cross_compiler_interface::uuid<
 	0x989DCE03,0x99AE,0x4DB2,0x9D,0x74,0xA6,0xFA,0xEF,0xEC,0x36,0x28

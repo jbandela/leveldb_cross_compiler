@@ -23,7 +23,7 @@
 // An interface to get the native representation
 template<class T>
 struct IGetNative
-	:public cross_compiler_interface::define_interface_unknown<T,
+	:public cross_compiler_interface::define_unknown_interface<T,
 	// {AAF3BE95-A1A8-4DCE-8672-CEF27CD7EEC9}
 	cross_compiler_interface::uuid<
 	0xAAF3BE95,0xA1A8,0x4DCE,0x86,0x72,0xCE,0xF2,0x7C,0xD7,0xEE,0xC9
