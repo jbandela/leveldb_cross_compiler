@@ -56,4 +56,8 @@ C:\Users\jrb\Source\Repos\leveldb_cross_compiler>g++ -shared
 Then copy the resulting dll to where you will be running the exe
 You can build the exe with either g++ or msvc
 
+To build on linux download leveldb then change the makefile to add -fPIC to the compiler options. This will create libleveldb.a
+
+Then run this command
+g++ -shared -o leveldb_cc_dll.so leveldb_cc_dll.cpp ../leveldb-1.9.0/libleveldb.a -lpthread -I ../leveldb-1.9.0/include/ -std=c++11 -fPIC -O2
 
