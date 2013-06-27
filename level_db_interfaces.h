@@ -388,11 +388,11 @@ namespace leveldb_cc{
 
 		Status DestroyDB(std::string name, use<IOptions>);
 		Status RepairDB(std::string name, use<IOptions>);
+		std::string GetVersion();
 
 
 
-
-		CPPCOMPONENTS_CONSTRUCT(DBStaticInterface, Open, DestroyDB, RepairDB);
+		CPPCOMPONENTS_CONSTRUCT(DBStaticInterface, Open, DestroyDB, RepairDB,GetVersion);
 
 
 	};

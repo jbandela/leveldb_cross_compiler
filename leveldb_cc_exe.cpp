@@ -1,29 +1,29 @@
 #include <iostream>
 #include "level_db_interfaces.h"
 
-using cross_compiler_interface::use_unknown;
-
-
-// Need this for MSVC bug  http://connect.microsoft.com/VisualStudio/feedback/details/772001/codename-milan-c-11-compilation-issue#details
-using namespace leveldb_cc;
 
 int main(){
 
-
 	// Open a scope so db goes out of scope so we can delete the database
 	{
+		std::cout << "Trying leveldb version " << leveldb_cc::DB::GetVersion() << "\n";
 		leveldb_cc::Options options;
 		options.set_create_if_missing(true);
-		options.set_write_buffer_size(8*1024*1024);
+		options.set_write_buffer_size(8 * 1024 * 1024);
 
 		// Set cache of 1MB
-		options.set_block_cache(leveldb_cc::LRUCache(1024*1024));
+		options.set_block_cache(leveldb_cc::LRUCache{ 1024 * 1024 });
 
 		// Set bloom filter with 10 bits per key
-		options.set_filter_policy(leveldb_cc::BloomFilter(10));
+		options.set_filter_policy(leveldb_cc::BloomFilter{ 10 });
 
 		// Open the db		
-		leveldb_cc::DB db(options,"c:/tmp/testdb");
+#ifdef _WIN32
+		std::string path{ "c:/tmp/testdb" };
+#else
+		std::string path{ "/tmp/testdb" };
+#endif
+		leveldb_cc::DB db(options,path);
 
 		leveldb_cc::WriteOptions wo;
 		wo.set_sync(false);
@@ -49,8 +49,8 @@ int main(){
 			std::cout << name << "\n";
 		}
 		catch(std::exception& e){
-			bad_status* ps = nullptr;
-			if((ps = dynamic_cast<bad_status*>(&e)) && ps->status().IsNotFound()){
+			leveldb_cc::bad_status* ps = nullptr;
+			if ((ps = dynamic_cast<leveldb_cc::bad_status*>(&e)) && ps->status().IsNotFound()){
 				std::cout << "Not Found ";
 			}
 			std::cout << "Error: " << e.what() << std::endl;
@@ -99,9 +99,9 @@ int main(){
 
 		// Get approximate sizes - seems to return 0
 		// maybe because keys/values are small
-		std::vector<Range> vr;
-		vr.push_back(Range(Slice("Name3"),Slice("Name4")));
-		vr.push_back(Range(Slice("Name3"),Slice("Name6")));
+		std::vector<leveldb_cc::Range> vr;
+		vr.push_back(leveldb_cc::Range(leveldb_cc::Slice("Name3"), leveldb_cc::Slice("Name4")));
+		vr.push_back(leveldb_cc::Range(leveldb_cc::Slice("Name3"), leveldb_cc::Slice("Name6")));
 		auto v = db.GetApproximateSizes(vr);
 		for(auto i:v){
 			std::cout << i << std::endl;
@@ -109,7 +109,6 @@ int main(){
 	}
 
 	// Delete the db 
-	leveldb_cc::Options op;
-	auto s = leveldb_cc::DB::DestroyDB("c:/tmp/testdb", op);
+	auto s = leveldb_cc::DB::DestroyDB("c:/tmp/testdb", leveldb_cc::Options{});
 
 }
