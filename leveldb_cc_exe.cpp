@@ -3,7 +3,11 @@
 
 
 int main(){
-
+#ifdef _WIN32
+		std::string path{ "c:/tmp/testdb" };
+#else
+		std::string path{ "/tmp/testdb" };
+#endif
 	// Open a scope so db goes out of scope so we can delete the database
 	{
 		int major, minor;
@@ -20,11 +24,7 @@ int main(){
 		options.set_filter_policy(leveldb_cc::BloomFilter{ 10 });
 
 		// Open the db		
-#ifdef _WIN32
-		std::string path{ "c:/tmp/testdb" };
-#else
-		std::string path{ "/tmp/testdb" };
-#endif
+
 		leveldb_cc::DB db(options,path);
 
 		leveldb_cc::WriteOptions wo;
@@ -111,6 +111,6 @@ int main(){
 	}
 
 	// Delete the db 
-	auto s = leveldb_cc::DB::DestroyDB("c:/tmp/testdb", leveldb_cc::Options{});
+	auto s = leveldb_cc::DB::DestroyDB(path, leveldb_cc::Options{});
 
 }
