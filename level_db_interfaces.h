@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include "../cross_compiler_call/cross_compiler_interface/cross_compiler_component.hpp"
+#include "cross_compiler_interface/cross_compiler_component.hpp"
 #include "slice.h"
 #include "status.h"
 
