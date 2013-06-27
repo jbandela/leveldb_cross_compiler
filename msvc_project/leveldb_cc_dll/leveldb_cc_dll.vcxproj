@@ -89,9 +89,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\leveldb_cc_dll.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="leveldb_cc_dll.def" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

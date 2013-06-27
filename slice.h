@@ -113,9 +113,9 @@ namespace cross_compiler_interface{
     template<>
     struct cross_conversion<leveldb_cc::Slice>{
         typedef leveldb_cc::Slice original_type;
-        typedef cross_string converted_type;
+        typedef cross_string<char> converted_type;
         static converted_type to_converted_type(const original_type& s){
-            cross_string ret;
+            cross_string<char> ret;
             ret.begin = s.data();
             ret.end = ret.begin + s.size();
             return ret;

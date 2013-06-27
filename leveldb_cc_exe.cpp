@@ -10,31 +10,26 @@ using namespace leveldb_cc;
 int main(){
 
 
-	cross_compiler_interface::module m("leveldb_cc_dll");
-
-	auto creator = cross_compiler_interface::create_unknown(m,"CreateLevelDBStaticFunctions")
-		.QueryInterface<leveldb_cc::ILevelDBStaticFunctions>();
-
 	// Open a scope so db goes out of scope so we can delete the database
 	{
-		auto options = creator.CreateOptions();
+		leveldb_cc::Options options;
 		options.set_create_if_missing(true);
 		options.set_write_buffer_size(8*1024*1024);
 
 		// Set cache of 1MB
-		options.set_block_cache(creator.NewLRUCache(1024*1024));
+		options.set_block_cache(leveldb_cc::LRUCache(1024*1024));
 
 		// Set bloom filter with 10 bits per key
-		options.set_filter_policy(creator.NewBloomFilterPolicy(10));
+		options.set_filter_policy(leveldb_cc::BloomFilter(10));
 
 		// Open the db		
-		auto db = creator.OpenDB(options,"c:/tmp/testdb");
+		leveldb_cc::DB db(options,"c:/tmp/testdb");
 
-		auto wo = creator.CreateWriteOptions();
+		leveldb_cc::WriteOptions wo;
 		wo.set_sync(false);
 
 		// Add a few key/value pairs in a batch
-		auto wb = creator.CreateWriteBatch();
+		leveldb_cc::WriteBatch wb;
 
 		wb.Put("Key1","Value1");
 		wb.Put("Key2","Value2");
@@ -46,7 +41,7 @@ int main(){
 
 
 
-		auto ro = creator.CreateReadOptions();
+		leveldb_cc::ReadOptions ro;
 		
 		// Read a value that is not there
 		try{
@@ -114,6 +109,7 @@ int main(){
 	}
 
 	// Delete the db 
-	auto s = creator.DestroyDB("c:/tmp/testdb",creator.CreateOptions());
+	leveldb_cc::Options op;
+	auto s = leveldb_cc::DB::DestroyDB("c:/tmp/testdb", op);
 
 }
