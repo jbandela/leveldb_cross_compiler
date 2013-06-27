@@ -6,7 +6,9 @@ int main(){
 
 	// Open a scope so db goes out of scope so we can delete the database
 	{
-		std::cout << "Trying leveldb version " << leveldb_cc::DB::GetVersion() << "\n";
+		int major, minor;
+		std::tie(major, minor) = leveldb_cc::DB::GetVersion();
+		std::cout << "Trying leveldb version " << major << "." << minor  << "\n";
 		leveldb_cc::Options options;
 		options.set_create_if_missing(true);
 		options.set_write_buffer_size(8 * 1024 * 1024);

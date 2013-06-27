@@ -388,7 +388,7 @@ namespace leveldb_cc{
 
 		Status DestroyDB(std::string name, use<IOptions>);
 		Status RepairDB(std::string name, use<IOptions>);
-		std::string GetVersion();
+		std::pair<int,int> GetVersion();
 
 
 

@@ -8,7 +8,6 @@
 #include "level_db_interfaces.h"
 
 #include<memory>
-#include <sstream>
 
 struct IGetNative
 {
@@ -562,10 +561,8 @@ struct DBImplementation:public implement_runtime_class<DBImplementation,
 		return StatusFromLevelDBStatus(s);
 	};
 
-	static std::string GetVersion(){
-		std::ostringstream s;
-		s << leveldb::kMajorVersion << "." << leveldb::kMinorVersion;
-		return s.str();
+	static std::pair<int,int> GetVersion(){
+		return std::make_pair(leveldb::kMajorVersion, leveldb::kMinorVersion);
 
 	}
 
