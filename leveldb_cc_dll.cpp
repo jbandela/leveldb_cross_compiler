@@ -9,7 +9,7 @@
 #include "leveldb/filter_policy.h"
 #include "leveldb/cache.h"
 
-#include "level_db_interfaces.h"
+#include "leveldb_interfaces.h"
 
 #include<memory>
 
@@ -575,15 +575,6 @@ struct DBImplementation:public implement_runtime_class<DBImplementation,
 };
 
 
+CPPCOMPONENTS_DEFINE_FACTORY(BloomFilterPolicyImplementation, DBImplementation, LRUCacheImplementation, OptionsImplementation,
+	ReadOptionsImplementation, WriteBatchImplementation, WriteOptionsImplementation);
 
-
-
-extern "C"{
-
-	cppcomponents::error_code CPPCOMPONENTS_CALLING_CONVENTION get_cppcomponents_factory(const char* s,
-		cppcomponents::portable_base** p){
-			typedef cross_compiler_interface::type_list<BloomFilterPolicyImplementation,DBImplementation,LRUCacheImplementation,OptionsImplementation,
-			ReadOptionsImplementation,WriteBatchImplementation,WriteOptionsImplementation> t;
-			return cppcomponents::get_activation_factory(t(), s, p);
-	}
-}

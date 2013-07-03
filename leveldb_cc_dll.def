@@ -1,3 +1,0 @@
-LIBRARY leveldb_cc_dll
-EXPORTS
-get_cppcomponents_factory
