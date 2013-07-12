@@ -15,13 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\level_db_interfaces.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\slice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\status.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\leveldb_interfaces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

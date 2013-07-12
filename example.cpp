@@ -20,21 +20,21 @@ int main(){
 		std::tie(major, minor) = leveldb_cc::DB::GetVersion();
 		std::cout << "Trying leveldb version " << major << "." << minor  << "\n";
 		leveldb_cc::Options options;
-		options.set_create_if_missing(true);
-		options.set_write_buffer_size(8 * 1024 * 1024);
+		options.CreateIfMissing = true;
+		options.WriteBufferSize = 8 * 1024 * 1024;
 
 		// Set cache of 1MB
-		options.set_block_cache(leveldb_cc::LRUCache{ 1024 * 1024 });
+		options.BlockCache = leveldb_cc::LRUCache{ 1024 * 1024 };
 
 		// Set bloom filter with 10 bits per key
-		options.set_filter_policy(leveldb_cc::BloomFilter{ 10 });
+		options.FilterPolicy = leveldb_cc::BloomFilter{ 10 };
 
 		// Open the db		
 
 		leveldb_cc::DB db(options,path);
 
 		leveldb_cc::WriteOptions wo;
-		wo.set_sync(false);
+		wo.Sync = false;
 
 		// Add a few key/value pairs in a batch
 		leveldb_cc::WriteBatch wb;
@@ -44,7 +44,7 @@ int main(){
 		wb.Put("Key3","Value3");
 		wb.Put("Key4","Value4");
 		
-		wo.set_sync(true);
+		wo.Sync = true;
 		db.WriteBatch(wo,wb);
 
 
@@ -73,7 +73,7 @@ int main(){
 
 		
 		// Use the snapshot
-		ro.set_snapshot(snapshot);
+		ro.Snapshot = snapshot;
 		auto iter = db.NewIterator(ro);
 		std::cout << "Iterator with snapshot\n";
 		for(iter.SeekToFirst();iter.Valid();iter.Next()){
@@ -84,7 +84,7 @@ int main(){
 		std::cout << "\n\n";
 
 		// Clear the snapshot
-		ro.set_snapshot(nullptr);
+		ro.Snapshot = nullptr;
 		db.ReleaseSnapshot(snapshot);
 
 		auto iter2 = db.NewIterator(ro);

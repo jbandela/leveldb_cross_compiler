@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <ReferencePath>C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\leveldb_src\include;C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\win32_impl_src;$(ReferencePath)</ReferencePath>
-    <IncludePath>C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\leveldb_src\include;C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\win32_impl_src;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\leveldb_src\include;C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\win32_impl_src;c:\Users\jrb\Source\Repos\cppcomponents;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -82,7 +82,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\level_db_interfaces.h" />
+    <ClInclude Include="..\..\leveldb_interfaces.h" />
     <ClInclude Include="..\..\slice.h" />
     <ClInclude Include="..\..\status.h" />
   </ItemGroup>

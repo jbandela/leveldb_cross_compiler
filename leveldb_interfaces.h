@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include "cross_compiler_interface/cross_compiler_component.hpp"
+#include <cppcomponents/cppcomponents.hpp>
 #include "slice.h"
 #include "status.h"
 
@@ -29,22 +29,16 @@ namespace leveldb_cc{
 		kSnappyCompression = 0x1
 	};
 
-	struct ISnapshot
+	struct ISnapshot : cppcomponents::define_interface<0xD6F3D379, 0x9E73, 0x407F, 0x84, 0x6E, 0xCC, 0xAF, 0xA1, 0xA3, 0xEA, 0x6E>
 	{
-		// {D6F3D379-9E73-407F-846E-CCAFA1A3EA6E}
-		typedef cppcomponents::uuid <
-			0xD6F3D379, 0x9E73, 0x407F, 0x84, 0x6E, 0xCC, 0xAF, 0xA1, 0xA3, 0xEA, 0x6E
-		> uuid;
+
 		CPPCOMPONENTS_CONSTRUCT_NO_METHODS(ISnapshot);
 
 	};
 
-	struct IComparator
+	struct IComparator : cppcomponents::define_interface < 0xC5B46BB4, 0x7CDC, 0x41E9, 0xBC, 0xC7, 0x3E, 0xBA, 0xF6, 0x2C, 0x88, 0x73>
 	{
-		// {C5B46BB4-7CDC-41E9-BCC7-3EBAF62C8873}
-		typedef cross_compiler_interface::uuid <
-			0xC5B46BB4, 0x7CDC, 0x41E9, 0xBC, 0xC7, 0x3E, 0xBA, 0xF6, 0x2C, 0x88, 0x73
-		> uuid;
+			
 
 		std::int32_t Compare(Slice, Slice);
 		const char* Name();
@@ -60,22 +54,16 @@ namespace leveldb_cc{
 
 
 	// Only support LRUCache for now
-	struct ICache{
-		// {1AF4C611-D729-4B15-91C0-D619FDDD4D85}
-		typedef cross_compiler_interface::uuid <
-			0x1AF4C611, 0xD729, 0x4B15, 0x91, 0xC0, 0xD6, 0x19, 0xFD, 0xDD, 0x4D, 0x85
-		> uuid;
+	struct ICache : cppcomponents::define_interface < 0x1AF4C611, 0xD729, 0x4B15, 0x91, 0xC0, 0xD6, 0x19, 0xFD, 0xDD, 0x4D, 0x85>{
+
 
 
 		CPPCOMPONENTS_CONSTRUCT_NO_METHODS(ICache);
 	};
 
 
-	struct LRUCacheFactoryInterface{
-		// {E4FC8445-D492-4BF6-8EA5-8B0C43CFD414}
-		typedef cppcomponents::uuid <
-			0xE4FC8445, 0xD492, 0x4BF6, 0x8E, 0xA5, 0x8B, 0x0C, 0x43, 0xCF, 0xD4, 0x14
-		> uuid;
+	struct LRUCacheFactoryInterface : cppcomponents::define_interface < 0xE4FC8445, 0xD492, 0x4BF6, 0x8E, 0xA5, 0x8B, 0x0C, 0x43, 0xCF, 0xD4, 0x14>{
+
 
 		cppcomponents::use<cppcomponents::InterfaceUnknown> Create(std::uint64_t);
 
@@ -85,56 +73,41 @@ namespace leveldb_cc{
 
 
 	};
-	typedef cppcomponents::DefaultStaticInterface LRUCacheStaticInterface;
+
 
 	inline std::string LRUCacheComponentName(){ return "leveldb_cc_dll!LRUCache"; }
 
-	typedef cppcomponents::runtime_class<LRUCacheComponentName, ICache, LRUCacheFactoryInterface, LRUCacheStaticInterface>
+	typedef cppcomponents::runtime_class<LRUCacheComponentName, cppcomponents::object_interfaces<ICache>,
+		cppcomponents::factory_interface<LRUCacheFactoryInterface>>
 		LRUCache_t;
 	typedef cppcomponents::use_runtime_class<LRUCache_t> LRUCache;
 
 
 	// Only support bloom filter
-	struct IFilterPolicy{
-		// {46559B7D-60E6-4D41-8B41-4262DD6F739C}
-		typedef cross_compiler_interface::uuid <
-			0x46559B7D, 0x60E6, 0x4D41, 0x8B, 0x41, 0x42, 0x62, 0xDD, 0x6F, 0x73, 0x9C
-		>
-		uuid;
+	struct IFilterPolicy : cppcomponents::define_interface<	0x46559B7D, 0x60E6, 0x4D41, 0x8B, 0x41, 0x42, 0x62, 0xDD, 0x6F, 0x73, 0x9C>{
 
 
 		CPPCOMPONENTS_CONSTRUCT_NO_METHODS(IFilterPolicy);
 	};
 
-	struct BloomFilterFactoryInterface{
-		// {01655F1E-F594-41FD-B668-24EF046A7DF6}
-		typedef cppcomponents::uuid <
-			0x01655F1E, 0xF594, 0x41FD, 0xB6, 0x68, 0x24, 0xEF, 0x04, 0x6A, 0x7D, 0xF6
-		> uuid;
+	struct BloomFilterFactoryInterface:cppcomponents::define_interface<	0x01655F1E, 0xF594, 0x41FD, 0xB6, 0x68, 0x24, 0xEF, 0x04, 0x6A, 0x7D, 0xF6>{	
 
 		cppcomponents::use<cppcomponents::InterfaceUnknown> Create(std::int32_t);
-
-
 
 		CPPCOMPONENTS_CONSTRUCT(BloomFilterFactoryInterface, Create);
 
 
 	};
-	typedef cppcomponents::DefaultStaticInterface BloomFilterStaticInterface;
 
 	inline std::string BloomFilterComponentName(){ return "leveldb_cc_dll!BloomFilter"; }
 
-	typedef cppcomponents::runtime_class<BloomFilterComponentName, IFilterPolicy, BloomFilterFactoryInterface, BloomFilterStaticInterface>
+	typedef cppcomponents::runtime_class<BloomFilterComponentName, cppcomponents::object_interfaces<IFilterPolicy>,
+		cppcomponents::factory_interface<BloomFilterFactoryInterface>>
 		BloomFilter_t;
 	typedef cppcomponents::use_runtime_class<BloomFilter_t> BloomFilter;
 
 
-	struct IOptions{
-		// {FC12AA30-D42B-48FB-9A93-3716D962BFB7}
-		typedef cross_compiler_interface::uuid <
-			0xFC12AA30, 0xD42B, 0x48FB, 0x9A, 0x93, 0x37, 0x16, 0xD9, 0x62, 0xBF, 0xB7
-		>
-		uuid;
+	struct IOptions:cppcomponents::define_interface<0xFC12AA30, 0xD42B, 0x48FB, 0x9A, 0x93, 0x37, 0x16, 0xD9, 0x62, 0xBF, 0xB7>{	
 		bool get_create_if_missing();
 		void set_create_if_missing(bool);
 
@@ -177,20 +150,34 @@ namespace leveldb_cc{
 			set_block_restart_interval, get_compression, set_compression,
 			set_comparator, set_block_cache,
 			set_filter_policy);
+
+
+		template<class T>
+		struct InterfaceExtras : public InterfaceExtrasBase<T>{
+			cppcomponents::property < T, decltype(Interface<T>::get_create_if_missing), decltype(Interface<T>::set_create_if_missing)> CreateIfMissing;
+			cppcomponents::property < T, decltype(Interface<T>::get_error_if_exists), decltype(Interface<T>::set_error_if_exists)> ErrorIfExists;
+			cppcomponents::property < T, decltype(Interface<T>::get_paranoid_checks), decltype(Interface<T>::set_paranoid_checks)> ParanoidChecks;
+			cppcomponents::property < T, decltype(Interface<T>::get_write_buffer_size), decltype(Interface<T>::set_write_buffer_size)> WriteBufferSize;
+			cppcomponents::property < T, decltype(Interface<T>::get_max_open_files), decltype(Interface<T>::set_max_open_files)> MaxOpenFiles;
+			cppcomponents::property < T, decltype(Interface<T>::get_block_size), decltype(Interface<T>::set_block_size)> BlockSize;
+			cppcomponents::property < T, decltype(Interface<T>::get_block_restart_interval), decltype(Interface<T>::set_block_restart_interval)> BlockRestartInterval;
+			cppcomponents::property < T, decltype(Interface<T>::get_compression), decltype(Interface<T>::set_compression)> Compression;
+			cppcomponents::write_only_property < T, decltype(Interface<T>::set_comparator)> Comparator;
+			cppcomponents::write_only_property < T, decltype(Interface<T>::set_block_cache)> BlockCache;
+			cppcomponents::write_only_property < T, decltype(Interface<T>::set_filter_policy)> FilterPolicy;
+
+			InterfaceExtras() : CreateIfMissing(this),ErrorIfExists(this),ParanoidChecks(this),WriteBufferSize(this),
+			MaxOpenFiles(this),BlockSize(this),BlockRestartInterval(this),Compression(this),Comparator(this),BlockCache(this),FilterPolicy(this){}
+		};
 	};
 
 	std::string OptionsComponentName(){ return "leveldb_cc_dll!Options"; }
 
-	typedef cppcomponents::runtime_class<OptionsComponentName, IOptions, cppcomponents::DefaultFactoryInterface, cppcomponents::DefaultStaticInterface> Options_t;
+	typedef cppcomponents::runtime_class<OptionsComponentName,cppcomponents::object_interfaces<IOptions>> Options_t;
 	typedef cppcomponents::use_runtime_class<Options_t> Options;
 
 
-	struct IReadOptions{
-		// {644668DE-09EC-49B1-A715-AD0D16CD8259}
-		typedef cross_compiler_interface::uuid <
-			0x644668DE, 0x09EC, 0x49B1, 0xA7, 0x15, 0xAD, 0x0D, 0x16, 0xCD, 0x82, 0x59
-		>
-		uuid;
+	struct IReadOptions:cppcomponents::define_interface<0x644668DE, 0x09EC, 0x49B1, 0xA7, 0x15, 0xAD, 0x0D, 0x16, 0xCD, 0x82, 0x59>{	
 		bool get_verify_checksums();
 		void set_verify_checksums(bool);
 
@@ -204,39 +191,47 @@ namespace leveldb_cc{
 			get_verify_checksums, set_verify_checksums,
 			get_fill_cache, set_fill_cache,
 			set_snapshot);
+
+		template<class T>
+		struct InterfaceExtras : public InterfaceExtrasBase<T>{
+
+			cppcomponents::property < T, decltype(Interface<T>::get_verify_checksums), decltype(Interface<T>::set_verify_checksums)> VerifyChecksums;
+			cppcomponents::property < T, decltype(Interface<T>::get_fill_cache), decltype(Interface<T>::set_fill_cache)> FillCache;
+			cppcomponents::write_only_property < T, decltype(Interface<T>::set_snapshot)> Snapshot;
+
+			InterfaceExtras() : VerifyChecksums(this), FillCache(this), Snapshot(this){}
+
+		};
 	};
 	std::string ReadOptionsComponentName(){ return "leveldb_cc_dll!ReadOptions"; }
 
-	typedef cppcomponents::runtime_class<ReadOptionsComponentName, IReadOptions, cppcomponents::DefaultFactoryInterface, cppcomponents::DefaultStaticInterface> ReadOptions_t;
+	typedef cppcomponents::runtime_class<ReadOptionsComponentName, cppcomponents::object_interfaces<IReadOptions>> ReadOptions_t;
 	typedef cppcomponents::use_runtime_class<ReadOptions_t> ReadOptions;
 
 
-	struct IWriteOptions{
-		// {23ACDD39-9502-42A0-B01D-F65E12859663}
-		typedef cross_compiler_interface::uuid <
-			0x23ACDD39, 0x9502, 0x42A0, 0xB0, 0x1D, 0xF6, 0x5E, 0x12, 0x85, 0x96, 0x63
-		>
-		uuid;
+	struct IWriteOptions:cppcomponents::define_interface<0x23ACDD39, 0x9502, 0x42A0, 0xB0, 0x1D, 0xF6, 0x5E, 0x12, 0x85, 0x96, 0x63>{
 		bool get_sync();
 		void set_sync(bool);
 
 
 		CPPCOMPONENTS_CONSTRUCT(IWriteOptions,
 			get_sync, set_sync);
+
+		template<class T>
+		struct InterfaceExtras : public InterfaceExtrasBase<T>{
+			cppcomponents::property < T, decltype(Interface<T>::get_sync), decltype(Interface<T>::set_sync)> Sync;
+
+			InterfaceExtras() : Sync(this){}
+		};
 	};
 
 	std::string WriteOptionsComponentName(){ return "leveldb_cc_dll!WriteOptions"; }
 
-	typedef cppcomponents::runtime_class<WriteOptionsComponentName, IWriteOptions, cppcomponents::DefaultFactoryInterface, cppcomponents::DefaultStaticInterface> WriteOptions_t;
+	typedef cppcomponents::runtime_class<WriteOptionsComponentName, cppcomponents::object_interfaces<IWriteOptions>> WriteOptions_t;
 	typedef cppcomponents::use_runtime_class<WriteOptions_t> WriteOptions;
 
-	struct IHandler{
-		// {549DA77F-2FC1-449F-9749-2E8F83F94BD1}
-		typedef cross_compiler_interface::uuid <
-			0x549DA77F, 0x2FC1, 0x449F, 0x97, 0x49, 0x2E, 0x8F, 0x83, 0xF9, 0x4B, 0xD1
-		>
-		uuid;
-		void Put(Slice, Slice);
+	struct IHandler:cppcomponents::define_interface<
+			0x549DA77F, 0x2FC1, 0x449F, 0x97, 0x49, 0x2E, 0x8F, 0x83, 0xF9, 0x4B, 0xD1>{	
 		void Delete(Slice);
 
 
@@ -247,13 +242,7 @@ namespace leveldb_cc{
 	};
 
 
-	struct IWriteBatch{
-		// {EF48CDBF-66E3-487C-921B-DD794BC56A03}
-		typedef cross_compiler_interface::uuid <
-			0xEF48CDBF, 0x66E3, 0x487C, 0x92, 0x1B, 0xDD, 0x79, 0x4B, 0xC5, 0x6A, 0x03
-		>
-		uuid;
-
+	struct IWriteBatch:cppcomponents::define_interface<	0xEF48CDBF, 0x66E3, 0x487C, 0x92, 0x1B, 0xDD, 0x79, 0x4B, 0xC5, 0x6A, 0x03>{	
 		void Put(Slice, Slice);
 		void Delete(Slice);
 		void Clear();
@@ -265,15 +254,10 @@ namespace leveldb_cc{
 	};
 	std::string WriteBatchComponentName(){ return "leveldb_cc_dll!WriteBatch"; }
 
-	typedef cppcomponents::runtime_class<WriteBatchComponentName, IWriteBatch, cppcomponents::DefaultFactoryInterface, cppcomponents::DefaultStaticInterface> WriteBatch_t;
+	typedef cppcomponents::runtime_class<WriteBatchComponentName, cppcomponents::object_interfaces<IWriteBatch>> WriteBatch_t;
 	typedef cppcomponents::use_runtime_class<WriteBatch_t> WriteBatch;
 
-	struct IIterator{
-		// {6F230C64-A115-4AF7-81E3-05D55B63980B}
-		typedef cross_compiler_interface::uuid <
-			0x6F230C64, 0xA115, 0x4AF7, 0x81, 0xE3, 0x05, 0xD5, 0x5B, 0x63, 0x98, 0x0B
-		>
-		uuid;
+	struct IIterator:cppcomponents::define_interface<0x6F230C64, 0xA115, 0x4AF7, 0x81, 0xE3, 0x05, 0xD5, 0x5B, 0x63, 0x98, 0x0B>{
 		bool Valid();
 		void SeekToFirst();
 		void SeekToLast();
@@ -292,13 +276,8 @@ namespace leveldb_cc{
 			Next, Prev, key, value, status);
 	};
 
-	struct IDB_Base{
-		// {E94D09D0-CDB1-4AB3-BCAC-BDB2FC0B2A94}
-		typedef cross_compiler_interface::uuid <
-			0xE94D09D0, 0xCDB1, 0x4AB3, 0xBC, 0xAC, 0xBD, 0xB2, 0xFC, 0x0B, 0x2A, 0x94
-		>
-		uuid;
-
+	struct IDB:cppcomponents::define_interface<
+			0xE94D09D0, 0xCDB1, 0x4AB3, 0xBC, 0xAC, 0xBD, 0xB2, 0xFC, 0x0B, 0x2A, 0x94>{	
 		Status Put(use<IWriteOptions>, Slice, Slice);
 		Status Delete(use<IWriteOptions>, Slice);
 		Status Write(use<IWriteOptions>, use<IWriteBatch>);
@@ -323,32 +302,30 @@ namespace leveldb_cc{
 
 
 
-		CPPCOMPONENTS_CONSTRUCT(IDB_Base
+		CPPCOMPONENTS_CONSTRUCT(IDB
 			, Put, Delete, Write, Get, NewIterator,
 			GetSnapshot, ReleaseSnapshot, GetProperty,
 			GetApproximateSizes, CompactRange, CompactAll);
-	};
-
-	struct IDB{
 
 		template<class T>
-		struct Interface : public IDB_Base::Interface<T>{
+		struct InterfaceExtras : public InterfaceExtrasBase<T>{
+
 			void PutValue(use<IWriteOptions> wo, Slice name, Slice value){
-				Status s = this->Put(wo, name, value);
+				Status s = this->get_interface().Put(wo, name, value);
 				if (!s.ok()){
 					throw bad_status(s);
 				}
 			}
 
 			void DeleteValue(use<IWriteOptions> wo, Slice name){
-				Status s = this->Delete(wo, name);
+				Status s = this->get_interface().Delete(wo, name);
 				if (!s.ok()){
 					throw bad_status(s);
 				}
 			}
 
 			void WriteBatch(use<IWriteOptions> wo, use<IWriteBatch> wb){
-				Status s = this->Write(wo, wb);
+				Status s = this->get_interface().Write(wo, wb);
 				if (!s.ok()){
 					throw bad_status(s);
 				}
@@ -356,7 +333,7 @@ namespace leveldb_cc{
 			}
 			std::string GetValue(use<IReadOptions> ro, Slice name){
 				std::string ret;
-				Status s = this->Get(ro, name, &ret);
+				Status s = this->get_interface().Get(ro, name, &ret);
 				if (!s.ok()){
 					throw bad_status(s);
 				}
@@ -364,14 +341,12 @@ namespace leveldb_cc{
 			}
 
 		};
-
 	};
 
-	struct DBFactoryInterface{
-		// {06BD1200-1F74-4232-B2AF-957B032679EF}
-		typedef cppcomponents::uuid <
-			0x06BD1200, 0x1F74, 0x4232, 0xB2, 0xAF, 0x95, 0x7B, 0x03, 0x26, 0x79, 0xEF
-		> uuid;
+
+
+	struct DBFactoryInterface:cppcomponents::define_interface<0x06BD1200, 0x1F74, 0x4232, 0xB2, 0xAF, 0x95, 0x7B, 0x03, 0x26, 0x79, 0xEF>{
+
 
 		use<cppcomponents::InterfaceUnknown> Create(use<IOptions>, std::string name);
 
@@ -383,11 +358,8 @@ namespace leveldb_cc{
 
 
 	};
-	struct DBStaticInterface{
-		// {56CFF5CF-672A-4C00-8BDC-DE55C60C5DE1}
-		typedef cppcomponents::uuid <
-			0x56CFF5CF, 0x672A, 0x4C00, 0x8B, 0xDC, 0xDE, 0x55, 0xC6, 0x0C, 0x5D, 0xE1
-		> uuid;
+	struct DBStaticInterface : cppcomponents::define_interface<0x56CFF5CF, 0x672A, 0x4C00, 0x8B, 0xDC, 0xDE, 0x55, 0xC6, 0x0C, 0x5D, 0xE1>{
+
 
 		Status Open(use<IOptions>, std::string name, out < use < IDB >> );
 
@@ -403,7 +375,9 @@ namespace leveldb_cc{
 	};
 	inline std::string DBComponentName(){ return "leveldb_cc_dll!DB"; }
 
-	typedef cppcomponents::runtime_class<DBComponentName, IDB, DBFactoryInterface, DBStaticInterface>
+	typedef cppcomponents::runtime_class<DBComponentName, cppcomponents::object_interfaces<IDB>,
+		cppcomponents::factory_interface<DBFactoryInterface>,
+		cppcomponents::static_interfaces<DBStaticInterface>>
 		DB_t;
 	typedef cppcomponents::use_runtime_class<DB_t> DB;
 

@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\leveldb_cc_exe.cpp">
+    <ClCompile Include="..\..\..\example.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
