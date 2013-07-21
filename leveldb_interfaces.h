@@ -29,14 +29,14 @@ namespace leveldb_cc{
 		kSnappyCompression = 0x1
 	};
 
-	struct ISnapshot : cppcomponents::define_interface<0xD6F3D379, 0x9E73, 0x407F, 0x84, 0x6E, 0xCC, 0xAF, 0xA1, 0xA3, 0xEA, 0x6E>
+	struct ISnapshot : cppcomponents::define_interface<cppcomponents::uuid<0xD6F3D379, 0x9E73, 0x407F, 0x846E, 0xCCAFA1A3EA6E>>
 	{
 
 		CPPCOMPONENTS_CONSTRUCT_NO_METHODS(ISnapshot);
 
 	};
 
-	struct IComparator : cppcomponents::define_interface < 0xC5B46BB4, 0x7CDC, 0x41E9, 0xBC, 0xC7, 0x3E, 0xBA, 0xF6, 0x2C, 0x88, 0x73>
+	struct IComparator : cppcomponents::define_interface < cppcomponents::uuid< 0xC5B46BB4, 0x7CDC, 0x41E9, 0xBCC7, 0x3EBAF62C8873>>
 	{
 			
 
@@ -54,7 +54,7 @@ namespace leveldb_cc{
 
 
 	// Only support LRUCache for now
-	struct ICache : cppcomponents::define_interface < 0x1AF4C611, 0xD729, 0x4B15, 0x91, 0xC0, 0xD6, 0x19, 0xFD, 0xDD, 0x4D, 0x85>{
+	struct ICache : cppcomponents::define_interface <cppcomponents::uuid< 0x1AF4C611, 0xD729, 0x4B15, 0x91C0, 0xD619FDDD4D85>>{
 
 
 
@@ -62,7 +62,7 @@ namespace leveldb_cc{
 	};
 
 
-	struct LRUCacheFactoryInterface : cppcomponents::define_interface < 0xE4FC8445, 0xD492, 0x4BF6, 0x8E, 0xA5, 0x8B, 0x0C, 0x43, 0xCF, 0xD4, 0x14>{
+	struct LRUCacheFactoryInterface : cppcomponents::define_interface <cppcomponents::uuid< 0xE4FC8445, 0xD492, 0x4BF6, 0x8EA5, 0x8B0C43CFD414>>{
 
 
 		cppcomponents::use<cppcomponents::InterfaceUnknown> Create(std::uint64_t);
@@ -84,13 +84,13 @@ namespace leveldb_cc{
 
 
 	// Only support bloom filter
-	struct IFilterPolicy : cppcomponents::define_interface<	0x46559B7D, 0x60E6, 0x4D41, 0x8B, 0x41, 0x42, 0x62, 0xDD, 0x6F, 0x73, 0x9C>{
+	struct IFilterPolicy : cppcomponents::define_interface<cppcomponents::uuid<0x46559B7D, 0x60E6, 0x4D41, 0x8B41, 0x4262DD6F739C>>{
 
 
 		CPPCOMPONENTS_CONSTRUCT_NO_METHODS(IFilterPolicy);
 	};
 
-	struct BloomFilterFactoryInterface:cppcomponents::define_interface<	0x01655F1E, 0xF594, 0x41FD, 0xB6, 0x68, 0x24, 0xEF, 0x04, 0x6A, 0x7D, 0xF6>{	
+	struct BloomFilterFactoryInterface:cppcomponents::define_interface<cppcomponents::uuid<	0x01655F1E, 0xF594, 0x41FD, 0xB668, 0x24EF046A7DF6>>{	
 
 		cppcomponents::use<cppcomponents::InterfaceUnknown> Create(std::int32_t);
 
@@ -107,7 +107,7 @@ namespace leveldb_cc{
 	typedef cppcomponents::use_runtime_class<BloomFilter_t> BloomFilter;
 
 
-	struct IOptions:cppcomponents::define_interface<0xFC12AA30, 0xD42B, 0x48FB, 0x9A, 0x93, 0x37, 0x16, 0xD9, 0x62, 0xBF, 0xB7>{	
+	struct IOptions:cppcomponents::define_interface<cppcomponents::uuid<0xFC12AA30, 0xD42B, 0x48FB, 0x9A93, 0x3716D962BFB7>>{	
 		bool get_create_if_missing();
 		void set_create_if_missing(bool);
 
@@ -177,7 +177,8 @@ namespace leveldb_cc{
 	typedef cppcomponents::use_runtime_class<Options_t> Options;
 
 
-	struct IReadOptions:cppcomponents::define_interface<0x644668DE, 0x09EC, 0x49B1, 0xA7, 0x15, 0xAD, 0x0D, 0x16, 0xCD, 0x82, 0x59>{	
+	struct IReadOptions:cppcomponents::define_interface<cppcomponents::uuid<0x644668DE, 0x09EC, 0x49B1, 0xA715, 0xAD0D16CD8259>>
+	{	
 		bool get_verify_checksums();
 		void set_verify_checksums(bool);
 
@@ -209,7 +210,7 @@ namespace leveldb_cc{
 	typedef cppcomponents::use_runtime_class<ReadOptions_t> ReadOptions;
 
 
-	struct IWriteOptions:cppcomponents::define_interface<0x23ACDD39, 0x9502, 0x42A0, 0xB0, 0x1D, 0xF6, 0x5E, 0x12, 0x85, 0x96, 0x63>{
+	struct IWriteOptions:cppcomponents::define_interface<cppcomponents::uuid<0x23ACDD39, 0x9502, 0x42A0, 0xB01D, 0xF65E12859663>>{
 		bool get_sync();
 		void set_sync(bool);
 
@@ -231,7 +232,7 @@ namespace leveldb_cc{
 	typedef cppcomponents::use_runtime_class<WriteOptions_t> WriteOptions;
 
 	struct IHandler:cppcomponents::define_interface<
-			0x549DA77F, 0x2FC1, 0x449F, 0x97, 0x49, 0x2E, 0x8F, 0x83, 0xF9, 0x4B, 0xD1>{	
+			cppcomponents::uuid<0x549DA77F, 0x2FC1, 0x449F, 0x9749, 0x2E8F83F94BD1>>{	
 		void Delete(Slice);
 
 
@@ -242,7 +243,7 @@ namespace leveldb_cc{
 	};
 
 
-	struct IWriteBatch:cppcomponents::define_interface<	0xEF48CDBF, 0x66E3, 0x487C, 0x92, 0x1B, 0xDD, 0x79, 0x4B, 0xC5, 0x6A, 0x03>{	
+	struct IWriteBatch:cppcomponents::define_interface<cppcomponents::uuid<0xEF48CDBF, 0x66E3, 0x487C, 0x921B, 0xDD794BC56A03>>{	
 		void Put(Slice, Slice);
 		void Delete(Slice);
 		void Clear();
@@ -257,7 +258,7 @@ namespace leveldb_cc{
 	typedef cppcomponents::runtime_class<WriteBatchComponentName, cppcomponents::object_interfaces<IWriteBatch>> WriteBatch_t;
 	typedef cppcomponents::use_runtime_class<WriteBatch_t> WriteBatch;
 
-	struct IIterator:cppcomponents::define_interface<0x6F230C64, 0xA115, 0x4AF7, 0x81, 0xE3, 0x05, 0xD5, 0x5B, 0x63, 0x98, 0x0B>{
+	struct IIterator:cppcomponents::define_interface<cppcomponents::uuid<0x6F230C64, 0xA115, 0x4AF7, 0x81E3, 0x05D55B63980B>>{
 		bool Valid();
 		void SeekToFirst();
 		void SeekToLast();
@@ -277,7 +278,7 @@ namespace leveldb_cc{
 	};
 
 	struct IDB:cppcomponents::define_interface<
-			0xE94D09D0, 0xCDB1, 0x4AB3, 0xBC, 0xAC, 0xBD, 0xB2, 0xFC, 0x0B, 0x2A, 0x94>{	
+			cppcomponents::uuid<0xE94D09D0, 0xCDB1, 0x4AB3, 0xBCAC, 0xBDB2FC0B2A94>>{	
 		Status Put(use<IWriteOptions>, Slice, Slice);
 		Status Delete(use<IWriteOptions>, Slice);
 		Status Write(use<IWriteOptions>, use<IWriteBatch>);
@@ -345,7 +346,7 @@ namespace leveldb_cc{
 
 
 
-	struct DBFactoryInterface:cppcomponents::define_interface<0x06BD1200, 0x1F74, 0x4232, 0xB2, 0xAF, 0x95, 0x7B, 0x03, 0x26, 0x79, 0xEF>{
+	struct DBFactoryInterface:cppcomponents::define_interface<cppcomponents::uuid<0x06BD1200, 0x1F74, 0x4232, 0xB2AF, 0x957B032679EF>>{
 
 
 		use<cppcomponents::InterfaceUnknown> Create(use<IOptions>, std::string name);
@@ -358,7 +359,7 @@ namespace leveldb_cc{
 
 
 	};
-	struct DBStaticInterface : cppcomponents::define_interface<0x56CFF5CF, 0x672A, 0x4C00, 0x8B, 0xDC, 0xDE, 0x55, 0xC6, 0x0C, 0x5D, 0xE1>{
+	struct DBStaticInterface : cppcomponents::define_interface<cppcomponents::uuid<0x56CFF5CF, 0x672A, 0x4C00, 0x8BDC, 0xDE55C60C5DE1>>{
 
 
 		Status Open(use<IOptions>, std::string name, out < use < IDB >> );
