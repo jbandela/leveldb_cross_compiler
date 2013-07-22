@@ -19,7 +19,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120_CTP_Nov2012</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <ReferencePath>C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\leveldb_src\include;C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\win32_impl_src;$(ReferencePath)</ReferencePath>
-    <IncludePath>C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\leveldb_src\include;C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\win32_impl_src;c:\Users\jrb\Source\Repos\cppcomponents;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\leveldb_src\include;C:\Users\jrb\Source\Repos\leveldb_cross_compiler\leveldbwin\win32_impl_src;c:\Users\jrb\Source\Repos\cppcomponents;C:\Users\jrb\Source\Repos\leveldb\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

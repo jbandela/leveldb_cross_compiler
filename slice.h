@@ -120,7 +120,7 @@ namespace cross_compiler_interface{
             ret.end = ret.begin + s.size();
             return ret;
         }
-        static  leveldb_cc::Slice to_original_type(converted_type& c){
+        static  leveldb_cc::Slice to_original_type(const converted_type& c){
             leveldb_cc::Slice ret(c.begin,c.end - c.begin);
             return ret;
         }

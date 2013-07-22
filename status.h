@@ -177,7 +177,6 @@ inline std::string Status::ToString() const {
 #pragma pack(push,1)
 	struct status_cross_type{
 		const char* state;
-		void  (CROSS_CALL_CALLING_CONVENTION *deleter)(const char*);
 
 	};
 #pragma pack(pop)
@@ -188,12 +187,9 @@ inline std::string Status::ToString() const {
 		}
 
 	}
-	inline void CROSS_CALL_CALLING_CONVENTION delete_state(const char* s){
-		delete [] s;
-	}
+
 	inline void status_to_cross(const Status& s, status_cross_type& sc){
 		sc.state = nullptr;
-		sc.deleter = &delete_state;
 		if(s.state_){
 			sc.state = Status::CopyState(s.state_);
 		}
@@ -218,13 +214,9 @@ namespace cross_compiler_interface{
 			leveldb_cc::status_to_cross(s,ret);
 			return ret;
 		}
-		static  original_type to_original_type(leveldb_cc::status_cross_type& sc){
+		static  original_type to_original_type(const leveldb_cc::status_cross_type& sc){
 			leveldb_cc::Status ret;
 			leveldb_cc::modify_status(ret,sc);
-			if(sc.state){
-				sc.deleter(sc.state);
-			}
-
 			return ret;
 		}
 	};

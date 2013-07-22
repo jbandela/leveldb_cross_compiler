@@ -10,16 +10,13 @@
 #include "leveldb/cache.h"
 
 #include "leveldb_interfaces.h"
-
 #include<memory>
 
-struct IGetNative
+struct IGetNative:public cppcomponents::define_interface<cppcomponents::uuid<
+	0xAAF3BE95,0xA1A8,0x4DCE,0x8672,0xCEF27CD7EEC9
+	>>
 {
-    typedef
-	cppcomponents::uuid<
-	0xAAF3BE95,0xA1A8,0x4DCE,0x86,0x72,0xCE,0xF2,0x7C,0xD7,0xEE,0xC9
-	>
-	uuid;
+
 
     void* get_native();
 
@@ -32,16 +29,17 @@ using namespace cppcomponents;
 
 inline std::string NotCreatable(){ return ""; }
 
-typedef runtime_class<NotCreatable, ISnapshot, NoConstructorFactoryInterface, DefaultStaticInterface, IGetNative> SnapShot_t;
+typedef runtime_class<NotCreatable, object_interfaces<ISnapshot, IGetNative>, factory_interface<NoConstructorFactoryInterface>> SnapShot_t;
 
 struct SnapShotImplementation:public implement_runtime_class<SnapShotImplementation, SnapShot_t>
 {
 	const leveldb::Snapshot* snapshot_;
 
+	void* IGetNative_get_native(){
+		return const_cast<leveldb::Snapshot*>(snapshot_);
+	}
+
 	SnapShotImplementation(const leveldb::Snapshot* s):snapshot_(s){
-		get_implementation<IGetNative>()->get_native = [this]()->void*{
-			return const_cast<leveldb::Snapshot*>(snapshot_);
-		};
 	}
 
 
@@ -89,38 +87,36 @@ struct ComparatorFromIComparator:public leveldb::Comparator{
 
 
 };
-typedef cppcomponents::runtime_class<LRUCacheComponentName, ICache, LRUCacheFactoryInterface, LRUCacheStaticInterface,IGetNative>
+typedef cppcomponents::runtime_class < LRUCacheComponentName, cppcomponents::object_interfaces<ICache,IGetNative>,
+	cppcomponents::factory_interface < LRUCacheFactoryInterface >>
 	LRUCachePrivate_t;
 
 struct LRUCacheImplementation
 	:public implement_runtime_class<LRUCacheImplementation,LRUCachePrivate_t>
 {
 	std::unique_ptr<leveldb::Cache> cache_;
-
+	auto IGetNative_get_native()->void*{ return cache_.get(); };
 	LRUCacheImplementation(std::uint64_t capacity) : cache_(leveldb::NewLRUCache(static_cast<std::size_t>(capacity))){
-		get_implementation<IGetNative>()->get_native = 
-			[this]()->void*{return cache_.get();};
 
 	}
 
 
 };
-typedef cppcomponents::runtime_class<BloomFilterComponentName, IFilterPolicy, BloomFilterFactoryInterface, BloomFilterStaticInterface,IGetNative>
+typedef cppcomponents::runtime_class < BloomFilterComponentName, cppcomponents::object_interfaces<IFilterPolicy,IGetNative>,
+	cppcomponents::factory_interface < BloomFilterFactoryInterface >>
 	BloomFilterPrivate_t;
 
 struct BloomFilterPolicyImplementation
 	:public implement_runtime_class<BloomFilterPolicyImplementation,BloomFilterPrivate_t>
 {
 	std::unique_ptr<const leveldb::FilterPolicy> filter_;
-
+	auto IGetNative_get_native()->void*{ return const_cast<leveldb::FilterPolicy*>(filter_.get()); };
 	BloomFilterPolicyImplementation(std::int32_t bits) : filter_(leveldb::NewBloomFilterPolicy(bits)){
-		get_implementation<IGetNative>()->get_native = 
-			[this]()->void*{return const_cast<leveldb::FilterPolicy*>(filter_.get());};
 
 	}
 
 };
-typedef cppcomponents::runtime_class<OptionsComponentName, IOptions, cppcomponents::DefaultFactoryInterface, cppcomponents::DefaultStaticInterface, IGetNative> OptionsPrivate_t;
+typedef runtime_class<OptionsComponentName, cppcomponents::object_interfaces<IOptions,IGetNative>> OptionsPrivate_t;
 
 struct OptionsImplementation
 	: public implement_runtime_class<OptionsImplementation, OptionsPrivate_t>
@@ -204,6 +200,7 @@ struct OptionsImplementation
 		};
 
 		void set_block_cache(use<ICache> ic){
+			cache_ = ic;
 			if(!ic){
 				options_.block_cache = nullptr;
 			}else{
@@ -212,6 +209,7 @@ struct OptionsImplementation
 			}
 		};
 		void set_filter_policy(use<IFilterPolicy> ic){
+			fp_ = ic;
 			if(!ic){
 				options_.filter_policy = nullptr;
 			}else{
@@ -221,26 +219,19 @@ struct OptionsImplementation
 		};
 
 
-		
-		OptionsImplementation(){
-
-			get_implementation<IGetNative>()->get_native = [this]()->void*{
+		void* IGetNative_get_native(){
 				return &options_;
 			};
+		OptionsImplementation(){}
 
-
-
-
-	}
-
-
+		use<IFilterPolicy> fp_;
+		use<ICache> cache_; 
 
 
 };
 
 
-typedef cppcomponents::runtime_class<ReadOptionsComponentName, IReadOptions, cppcomponents::DefaultFactoryInterface,
-	cppcomponents::DefaultStaticInterface,IGetNative> ReadOptionsPrivate_t;
+typedef cppcomponents::runtime_class<ReadOptionsComponentName, object_interfaces<IReadOptions,IGetNative>> ReadOptionsPrivate_t;
 
 struct ReadOptionsImplementation
 	: public implement_runtime_class<ReadOptionsImplementation, ReadOptionsPrivate_t>
@@ -267,17 +258,14 @@ struct ReadOptionsImplementation
 
 		};
 
-	ReadOptionsImplementation(){
-
-		get_implementation<IGetNative>()->get_native = 
-			[this](){return &options_;};
-
-	};
+		auto IGetNative_get_native()->void*{
+			return &options_;
+		};
+		ReadOptionsImplementation(){}
 
 
 };
-typedef cppcomponents::runtime_class<WriteOptionsComponentName, IWriteOptions, cppcomponents::DefaultFactoryInterface,
-	cppcomponents::DefaultStaticInterface, IGetNative> WriteOptionsPrivate_t;
+typedef cppcomponents::runtime_class<WriteOptionsComponentName,object_interfaces<IWriteOptions,IGetNative>> WriteOptionsPrivate_t;
 
 struct WriteOptionsImplementation
 	: public implement_runtime_class<WriteOptionsImplementation,
@@ -293,11 +281,15 @@ struct WriteOptionsImplementation
 		options_.sync = b;
 	};
 
+	auto IGetNative_get_native()->void*{
+		return &options_;
+	};
 	WriteOptionsImplementation(){
-		get_implementation<IGetNative>()->get_native = [this]()->void*{
-			return &options_;
 
-		};
+
+
+
+
 	}
 
 
@@ -332,8 +324,7 @@ Status StatusFromLevelDBStatus(leveldb::Status& s){
 
 }
 
-typedef cppcomponents::runtime_class<WriteBatchComponentName, IWriteBatch, cppcomponents::DefaultFactoryInterface, 
-	cppcomponents::DefaultStaticInterface, IGetNative> WriteBatchPrivate_t;
+typedef cppcomponents::runtime_class<WriteBatchComponentName, object_interfaces<IWriteBatch,IGetNative> > WriteBatchPrivate_t;
 
 struct WriteBatchImplementation
 	:public implement_runtime_class<WriteBatchImplementation,
@@ -362,18 +353,22 @@ struct WriteBatchImplementation
 
 	};
 
+	auto IGetNative_get_native()->void*{
+		return &wb_;
+	};
 	WriteBatchImplementation(){
 
 
-		get_implementation<IGetNative>()->get_native = 
-			[this]()->void*{ return &wb_;};
+
+
+
 	}
 
 
 
 };
 
-typedef runtime_class<NotCreatable, IIterator, NoConstructorFactoryInterface, DefaultStaticInterface> IteratorPrivate_t;
+typedef runtime_class<NotCreatable,object_interfaces<IIterator>,factory_interface<NoConstructorFactoryInterface>> IteratorPrivate_t;
 
 struct IteratorImplementation
 	:public implement_runtime_class<IteratorImplementation,IteratorPrivate_t>{
@@ -441,10 +436,14 @@ struct DBImplementation:public implement_runtime_class<DBImplementation,
 	auto Write(use<IWriteOptions> wo,
 		use<IWriteBatch> wb)
 		->Status{
-			auto s = db_->Write(*static_cast<leveldb::WriteOptions*>(wo
-				.QueryInterface<IGetNative>().get_native()),
-				static_cast<leveldb::WriteBatch*>(wb
-				.QueryInterface<IGetNative>().get_native()));
+				auto wop = *static_cast<leveldb::WriteOptions*>(wo
+					.QueryInterface<IGetNative>().get_native());
+
+				auto wbat = static_cast<leveldb::WriteBatch*>(wb
+					.QueryInterface<IGetNative>().get_native());
+			auto s = db_->Write(wop,wbat);
+
+
 			return StatusFromLevelDBStatus(s);
 
 	};

@@ -233,7 +233,8 @@ namespace leveldb_cc{
 
 	struct IHandler:cppcomponents::define_interface<
 			cppcomponents::uuid<0x549DA77F, 0x2FC1, 0x449F, 0x9749, 0x2E8F83F94BD1>>{	
-		void Delete(Slice);
+				void Put(Slice, Slice);
+				void Delete(Slice);
 
 
 

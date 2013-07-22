@@ -16,6 +16,7 @@ int main(){
 #endif
 	// Open a scope so db goes out of scope so we can delete the database
 	{
+		leveldb_cc::ReadOptions op1;
 		int major, minor;
 		std::tie(major, minor) = leveldb_cc::DB::GetVersion();
 		std::cout << "Trying leveldb version " << major << "." << minor  << "\n";
