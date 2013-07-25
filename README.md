@@ -11,19 +11,19 @@ This saves you from having to build LevelDB. This is mostly useful on Windows, w
 See <http://ayende.com/blog/161409/leveldb-windows-it-aint-a-love-story>.
 
 ##What does this depend on?
-This depends on cross_compiler_call found at <https://github.com/jbandela/cross_compiler_call>. The cross_compiler_call library is a header only library
+This depends on cppcomponents found at <https://github.com/jbandela/cppcomponents>. The cppcomponents library is a header only library
 that works on Windows and Linux and uses C++11 to make it easy to integrate code written that is written using different compilers or uses different
 standard libraries. For example on Windows, you can write code in g++ and easily call it from Visual C++. On linux you can write code in clang with libc++
 and call it from g++.
 
 ##Will it work with my compiler?
-cross_compiler_call which this library uses requires excellent C++11 support especially for variadic templates. This code has been tested with 
+cppcomponents which this library uses requires excellent C++11 support especially for variadic templates. This code has been tested with 
 Microsoft Visual Studio 2013 Preview, Mingw g++ 4.8.1 on Windows and g++ 4.7.2 and clang++ 3.4 with libc++ on Linux. Make sure to include
 `-std=c++11` with g++ and clang++
 
 ##How do I build code that uses this library?
-1. Make sure you have `cross_compiler_call` in your header search path. You can download from <https://github.com/jbandela/cross_compiler_call>
-	- You can use the `-I /path_to_cross_compiler_call` flag
+1. Make sure you have `cppcomponents` in your header search path. You can download from <https://github.com/jbandela/cppcomponents>
+	- You can use the `-I /path_to_cppcomponents` flag
 	- If using a Visual C++ project add that to the Visual C++ Include files directories
 
 2. Include `leveldb_interfaces.h` in your `.cpp` file
@@ -54,18 +54,18 @@ Take a look at `example.cpp` for a simple example
 5. `make`
 6. Download leveldb_cross_compiler from https://github.com/jbandela/leveldb_cross_compiler
 7. `C:\Users\jrb\Source\Repos\leveldb_cross_compiler>g++ leveldb_cc_dll.cpp -O2 -shared -o leveldb_cc_dll.dll ..\leveldb\libleveldb.a -I ..\leveldb\include -I ..\cr
-oss_compiler_call -lshlwapi -std=c++11` replacing the paths to `libleveldb.a` and `leveldb\include` and `cross_compiler_call` as necessary
+oss_compiler_call -lshlwapi -std=c++11` replacing the paths to `libleveldb.a` and `leveldb\include` and `cppcomponents` as necessary
 
 ###On Linux
 1. Download LevelDB
 2. Go to the directory where you downloaded LevelDB
 3. Edit the `Makefile` and add `-fPIC` to the end of the `OPT ?= `
 4. `make`
-5. Download `cross_compiler_call`
+5. Download `cppcomponents`
 6. Downlaod `leveldb_cross_compiler`
 7. Go the leveldb_cross_compiler directory
 8. `g++ -shared -o leveldb_cc_dll.so leveldb_cc_dll.cpp ../leveldb-1.12.0/libleveldb.a -lpthread -I ../leveldb-1.12.0/include/  -I ..\cr
-oss_compiler_call-std=c++11 -fPIC -O2` replacing the paths to `libleveldb.a` and `leveldb\include` and `cross_compiler_call` as necessary
+oss_compiler_call-std=c++11 -fPIC -O2` replacing the paths to `libleveldb.a` and `leveldb\include` and `cppcomponents` as necessary
 
 
 
