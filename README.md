@@ -53,8 +53,7 @@ Take a look at `example.cpp` for a simple example
 4. `export TARGET_OS=NATIVE_WINDOWS`
 5. `make`
 6. Download leveldb_cross_compiler from https://github.com/jbandela/leveldb_cross_compiler
-7. `C:\Users\jrb\Source\Repos\leveldb_cross_compiler>g++ leveldb_cc_dll.cpp -O2 -shared -o leveldb_cc_dll.dll ..\leveldb\libleveldb.a -I ..\leveldb\include -I ..\cr
-oss_compiler_call -lshlwapi -std=c++11` replacing the paths to `libleveldb.a` and `leveldb\include` and `cppcomponents` as necessary
+7. `C:\Users\jrb\Source\Repos\leveldb_cross_compiler>g++ leveldb_cc_dll.cpp -O2 -shared -o leveldb_cc_dll.dll ..\leveldb\libleveldb.a -I ..\leveldb\include -I cppcomponents -lshlwapi -std=c++11` replacing the paths to `libleveldb.a` and `leveldb\include` and `cppcomponents` as necessary
 
 ###On Linux
 1. Download LevelDB
@@ -64,8 +63,7 @@ oss_compiler_call -lshlwapi -std=c++11` replacing the paths to `libleveldb.a` an
 5. Download `cppcomponents`
 6. Downlaod `leveldb_cross_compiler`
 7. Go the leveldb_cross_compiler directory
-8. `g++ -shared -o leveldb_cc_dll.so leveldb_cc_dll.cpp ../leveldb-1.12.0/libleveldb.a -lpthread -I ../leveldb-1.12.0/include/  -I ..\cr
-oss_compiler_call-std=c++11 -fPIC -O2` replacing the paths to `libleveldb.a` and `leveldb\include` and `cppcomponents` as necessary
+8. `g++ -shared -o leveldb_cc_dll.so leveldb_cc_dll.cpp ../leveldb-1.12.0/libleveldb.a -lpthread -I ../leveldb-1.12.0/include/  -I cppcomponents -std=c++11 -fPIC -O2` replacing the paths to `libleveldb.a` and `leveldb\include` and `cppcomponents` as necessary
 
 
 

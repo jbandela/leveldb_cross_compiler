@@ -574,6 +574,5 @@ struct DBImplementation:public implement_runtime_class<DBImplementation,
 };
 
 
-CPPCOMPONENTS_DEFINE_FACTORY(BloomFilterPolicyImplementation, DBImplementation, LRUCacheImplementation, OptionsImplementation,
-	ReadOptionsImplementation, WriteBatchImplementation, WriteOptionsImplementation);
+CPPCOMPONENTS_DEFINE_FACTORY();
 
